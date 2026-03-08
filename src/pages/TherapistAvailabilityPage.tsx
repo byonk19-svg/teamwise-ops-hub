@@ -2,16 +2,17 @@ import { useState, useCallback } from "react";
 import { format, addDays, parseISO, isWeekend } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { AvailabilityStatus, NEXT_CYCLE } from "@/lib/availability-data";
 import { motion } from "framer-motion";
-import { Send, Check, Info } from "lucide-react";
+import { Send, Check, Info, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Cycle through statuses on click
 const STATUS_CYCLE: AvailabilityStatus[] = ["available", "preferred", "unavailable"];
 
 function nextStatus(current: AvailabilityStatus): AvailabilityStatus {
@@ -41,6 +42,8 @@ function statusLabel(status: AvailabilityStatus) {
   }
 }
 
+const NOTE_PRESETS = ["PTO", "Appointment", "Training", "Personal"];
+
 export default function TherapistAvailabilityPage() {
   const totalDays = NEXT_CYCLE.weeks * 7;
 
@@ -53,6 +56,7 @@ export default function TherapistAvailabilityPage() {
     return map;
   });
 
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
   const weeks: string[][] = [];
@@ -66,19 +70,39 @@ export default function TherapistAvailabilityPage() {
 
   const toggleDay = useCallback((dateStr: string) => {
     if (submitted) return;
-    setStatuses((prev) => ({
-      ...prev,
-      [dateStr]: nextStatus(prev[dateStr] ?? "available"),
-    }));
+    setStatuses((prev) => {
+      const next = nextStatus(prev[dateStr] ?? "available");
+      // Clear note when cycling away from unavailable
+      if (next === "available") {
+        setNotes((n) => {
+          const copy = { ...n };
+          delete copy[dateStr];
+          return copy;
+        });
+      }
+      return { ...prev, [dateStr]: next };
+    });
   }, [submitted]);
+
+  const setNote = useCallback((dateStr: string, note: string) => {
+    setNotes((prev) => {
+      if (!note.trim()) {
+        const copy = { ...prev };
+        delete copy[dateStr];
+        return copy;
+      }
+      return { ...prev, [dateStr]: note.trim() };
+    });
+  }, []);
 
   const unavailableCount = Object.values(statuses).filter((s) => s === "unavailable").length;
   const preferredCount = Object.values(statuses).filter((s) => s === "preferred").length;
+  const notesCount = Object.keys(notes).length;
 
   function handleSubmit() {
     setSubmitted(true);
     toast.success("Availability submitted!", {
-      description: `${unavailableCount} days unavailable, ${preferredCount} preferred days marked.`,
+      description: `${unavailableCount} days unavailable, ${preferredCount} preferred, ${notesCount} notes.`,
     });
   }
 
@@ -148,7 +172,7 @@ export default function TherapistAvailabilityPage() {
           >
             <Info className="h-3.5 w-3.5 text-primary flex-shrink-0" />
             <p className="text-[11px] text-primary/80">
-              Click once for <strong>preferred</strong>, twice for <strong>unavailable</strong>, three times to reset to <strong>available</strong>.
+              Click to cycle statuses. On <strong>unavailable</strong> days, click the note icon to add a reason (PTO, appointment, etc).
             </p>
           </motion.div>
         )}
@@ -182,28 +206,22 @@ export default function TherapistAvailabilityPage() {
                     const date = parseISO(dateStr);
                     const status = statuses[dateStr] ?? "available";
                     const weekend = isWeekend(date);
+                    const note = notes[dateStr];
+                    const isUnavailable = status === "unavailable";
 
                     return (
-                      <button
+                      <DayCell
                         key={dateStr}
-                        onClick={() => toggleDay(dateStr)}
-                        disabled={submitted}
-                        className={cn(
-                          "rounded-lg border p-3 text-center transition-all duration-150",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                          statusColor(status),
-                          !submitted && "hover:shadow-md hover:-translate-y-px cursor-pointer",
-                          submitted && "opacity-80 cursor-default",
-                          weekend && status === "available" && "opacity-60"
-                        )}
-                      >
-                        <span className="font-heading font-bold text-sm leading-none block">
-                          {format(date, "d")}
-                        </span>
-                        <span className="text-[9px] font-medium mt-1 block opacity-70">
-                          {statusLabel(status)}
-                        </span>
-                      </button>
+                        dateStr={dateStr}
+                        date={date}
+                        status={status}
+                        note={note}
+                        weekend={weekend}
+                        submitted={submitted}
+                        isUnavailable={isUnavailable}
+                        onToggle={() => toggleDay(dateStr)}
+                        onSetNote={(n) => setNote(dateStr, n)}
+                      />
                     );
                   })}
                 </div>
@@ -213,5 +231,155 @@ export default function TherapistAvailabilityPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+function DayCell({
+  dateStr,
+  date,
+  status,
+  note,
+  weekend,
+  submitted,
+  isUnavailable,
+  onToggle,
+  onSetNote,
+}: {
+  dateStr: string;
+  date: Date;
+  status: AvailabilityStatus;
+  note?: string;
+  weekend: boolean;
+  submitted: boolean;
+  isUnavailable: boolean;
+  onToggle: () => void;
+  onSetNote: (note: string) => void;
+}) {
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [draft, setDraft] = useState(note ?? "");
+
+  return (
+    <div className="relative">
+      <button
+        onClick={onToggle}
+        disabled={submitted}
+        className={cn(
+          "w-full rounded-lg border p-3 text-center transition-all duration-150",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+          statusColor(status),
+          !submitted && "hover:shadow-md hover:-translate-y-px cursor-pointer",
+          submitted && "opacity-80 cursor-default",
+          weekend && status === "available" && "opacity-60"
+        )}
+      >
+        <span className="font-heading font-bold text-sm leading-none block">
+          {format(date, "d")}
+        </span>
+        {note ? (
+          <span className="text-[8px] font-medium mt-1 block truncate">{note}</span>
+        ) : (
+          <span className="text-[9px] font-medium mt-1 block opacity-70">
+            {statusLabel(status)}
+          </span>
+        )}
+      </button>
+
+      {/* Note icon for unavailable days */}
+      {isUnavailable && !submitted && (
+        <Popover open={noteOpen} onOpenChange={setNoteOpen}>
+          <PopoverTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setDraft(note ?? "");
+                setNoteOpen(true);
+              }}
+              className={cn(
+                "absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full flex items-center justify-center transition-colors shadow-sm",
+                note
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-muted border border-border text-muted-foreground hover:bg-accent"
+              )}
+            >
+              <MessageSquare className="h-2.5 w-2.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-56 p-3"
+            side="top"
+            align="center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+              Reason for {format(date, "MMM d")}
+            </p>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {NOTE_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => {
+                    onSetNote(preset);
+                    setDraft(preset);
+                    setNoteOpen(false);
+                  }}
+                  className={cn(
+                    "rounded-md px-2 py-1 text-[10px] font-medium border transition-colors",
+                    draft === preset
+                      ? "bg-primary/10 border-primary/25 text-primary"
+                      : "bg-muted border-border text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <Input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Custom note..."
+                className="h-7 text-xs"
+                maxLength={30}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onSetNote(draft);
+                    setNoteOpen(false);
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => {
+                  onSetNote(draft);
+                  setNoteOpen(false);
+                }}
+              >
+                Save
+              </Button>
+            </div>
+            {note && (
+              <button
+                onClick={() => {
+                  onSetNote("");
+                  setDraft("");
+                  setNoteOpen(false);
+                }}
+                className="text-[10px] text-destructive hover:underline mt-1.5"
+              >
+                Remove note
+              </button>
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* Show note indicator on submitted/non-unavailable with note */}
+      {note && submitted && (
+        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive flex items-center justify-center">
+          <MessageSquare className="h-2 w-2 text-destructive-foreground" />
+        </div>
+      )}
+    </div>
   );
 }
