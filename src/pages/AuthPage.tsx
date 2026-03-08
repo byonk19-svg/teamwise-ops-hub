@@ -11,43 +11,23 @@ import {
   Users,
   ArrowLeftRight,
   Shield,
+  Check,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-const floatingCards = [
-  {
-    icon: CalendarDays,
-    title: "Schedule",
-    detail: "View & manage weekly shifts",
-    color: "bg-sidebar-accent",
-    position: "top-[18%] left-[8%]",
-    delay: 0.6,
-  },
-  {
-    icon: ArrowLeftRight,
-    title: "Swaps",
-    detail: "Request & approve trades",
-    color: "bg-sidebar-ring/20",
-    position: "top-[40%] right-[6%]",
-    delay: 0.8,
-  },
-  {
-    icon: Users,
-    title: "Team",
-    detail: "See who's on today",
-    color: "bg-sidebar-accent",
-    position: "bottom-[32%] left-[12%]",
-    delay: 1.0,
-  },
-  {
-    icon: Clock,
-    title: "Availability",
-    detail: "Set your preferred hours",
-    color: "bg-sidebar-ring/20",
-    position: "bottom-[14%] right-[10%]",
-    delay: 1.2,
-  },
+// Fake schedule rows for the UI mockup
+const mockScheduleRows = [
+  { name: "Mon 3/10", shifts: ["7a–3p", "3p–11p", "—"], filled: [true, true, false] },
+  { name: "Tue 3/11", shifts: ["7a–3p", "7a–3p", "11p–7a"], filled: [true, true, true] },
+  { name: "Wed 3/12", shifts: ["—", "3p–11p", "7a–3p"], filled: [false, true, true] },
+  { name: "Thu 3/13", shifts: ["7a–3p", "3p–11p", "7a–3p"], filled: [true, true, true] },
+];
+
+const mockSwaps = [
+  { from: "Shift A", to: "Shift B", status: "Approved" },
+  { from: "Shift C", to: "Shift D", status: "Pending" },
 ];
 
 export default function AuthPage() {
@@ -98,8 +78,6 @@ export default function AuthPage() {
         <div className="absolute inset-0">
           <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sidebar-accent/40 to-transparent blur-3xl" />
           <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-gradient-to-tl from-sidebar-ring/15 to-transparent blur-3xl" />
-          <div className="absolute top-1/3 left-1/2 h-64 w-64 rounded-full bg-sidebar-accent/10 blur-2xl" />
-          {/* Grid pattern overlay */}
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -125,30 +103,118 @@ export default function AuthPage() {
           </span>
         </motion.div>
 
-        {/* Floating preview cards */}
-        <div className="relative z-10 flex-1 my-8">
-          <div className="relative h-full">
-            {floatingCards.map((card, i) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 24, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.6,
-                  delay: card.delay,
-                  ease: [0.21, 0.47, 0.32, 0.98],
-                }}
-                className={`absolute ${card.position} ${card.color} backdrop-blur-sm rounded-xl px-5 py-4 shadow-xl shadow-black/10 border border-white/[0.06] max-w-[220px]`}
-              >
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <card.icon className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
-                  <span className="text-xs font-semibold text-sidebar-accent-foreground uppercase tracking-wide">
-                    {card.title}
-                  </span>
+        {/* Stacked UI mockup */}
+        <div className="relative z-10 flex-1 my-8 flex items-center justify-center">
+          <div className="w-full max-w-md space-y-4">
+            {/* Schedule card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className="bg-sidebar-accent/60 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/15 overflow-hidden"
+            >
+              <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-sidebar-accent-foreground" />
+                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Weekly Schedule</span>
                 </div>
-                <p className="text-sm text-sidebar-primary/80 font-medium">{card.detail}</p>
-              </motion.div>
-            ))}
+                <span className="text-xs text-sidebar-muted">Mar 10 – 13</span>
+              </div>
+              <div className="px-5 py-3">
+                {/* Header row */}
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Day</span>
+                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 1</span>
+                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 2</span>
+                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 3</span>
+                </div>
+                {mockScheduleRows.map((row, i) => (
+                  <motion.div
+                    key={row.name}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.6 + i * 0.08 }}
+                    className="grid grid-cols-4 gap-2 py-1.5 border-t border-white/[0.04]"
+                  >
+                    <span className="text-xs font-medium text-sidebar-primary/90">{row.name}</span>
+                    {row.shifts.map((shift, j) => (
+                      <span
+                        key={j}
+                        className={`text-xs font-medium px-2 py-0.5 rounded-md text-center ${
+                          row.filled[j]
+                            ? "bg-sidebar-ring/20 text-sidebar-ring"
+                            : "bg-white/[0.04] text-sidebar-muted"
+                        }`}
+                      >
+                        {shift}
+                      </span>
+                    ))}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Swap requests card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className="bg-sidebar-accent/40 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-xl shadow-black/10 overflow-hidden"
+            >
+              <div className="px-5 py-3 flex items-center justify-between border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <ArrowLeftRight className="h-4 w-4 text-sidebar-accent-foreground" />
+                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Recent Swaps</span>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-sidebar-muted" />
+              </div>
+              <div className="px-5 py-2.5 space-y-2">
+                {mockSwaps.map((swap, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.9 + i * 0.1 }}
+                    className="flex items-center justify-between py-1.5"
+                  >
+                    <div className="flex items-center gap-2 text-xs text-sidebar-primary/80">
+                      <span className="font-medium">{swap.from}</span>
+                      <ArrowLeftRight className="h-3 w-3 text-sidebar-muted" />
+                      <span className="font-medium">{swap.to}</span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        swap.status === "Approved"
+                          ? "bg-sidebar-ring/20 text-sidebar-ring"
+                          : "bg-sidebar-accent text-sidebar-accent-foreground"
+                      }`}
+                    >
+                      {swap.status === "Approved" && <Check className="h-2.5 w-2.5 inline mr-0.5 -mt-0.5" />}
+                      {swap.status}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Team status mini card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.9, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className="flex items-center gap-4 bg-sidebar-accent/30 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-lg shadow-black/8 px-5 py-3.5"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-ring/15">
+                <Users className="h-4 w-4 text-sidebar-ring" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-sidebar-accent-foreground">Team Overview</p>
+                <p className="text-[11px] text-sidebar-muted">All shifts covered this week</p>
+              </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-ring/20">
+                <Check className="h-4 w-4 text-sidebar-ring" />
+              </div>
+            </motion.div>
           </div>
         </div>
 
@@ -172,7 +238,6 @@ export default function AuthPage() {
 
       {/* Right panel — form */}
       <div className="flex flex-1 items-center justify-center bg-background px-6 relative">
-        {/* Subtle background accent */}
         <div className="absolute top-0 right-0 h-72 w-72 rounded-full bg-primary/[0.03] blur-3xl" />
 
         <motion.div
