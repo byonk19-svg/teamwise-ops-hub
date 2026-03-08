@@ -56,7 +56,19 @@ export function TherapistDetailDialog({ therapist, certifications, open, onOpenC
     const next = currentPrefs.preferredDays.includes(day)
       ? currentPrefs.preferredDays.filter((d) => d !== day)
       : [...currentPrefs.preferredDays, day].sort();
-    setLocalPrefs({ ...currentPrefs, preferredDays: next });
+    // Remove from unavailable if adding to preferred
+    const nextUnavail = currentPrefs.unavailableDays.filter((d) => d !== day);
+    setLocalPrefs({ ...currentPrefs, preferredDays: next, unavailableDays: nextUnavail });
+  };
+
+  const toggleUnavailableDay = (day: number) => {
+    if (!currentPrefs) return;
+    const next = currentPrefs.unavailableDays.includes(day)
+      ? currentPrefs.unavailableDays.filter((d) => d !== day)
+      : [...currentPrefs.unavailableDays, day].sort();
+    // Remove from preferred if adding to unavailable
+    const nextPref = currentPrefs.preferredDays.filter((d) => d !== day);
+    setLocalPrefs({ ...currentPrefs, unavailableDays: next, preferredDays: nextPref });
   };
 
   if (!therapist || !currentPrefs) return null;
