@@ -236,9 +236,10 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                           {staff.map((t) => {
                             const assignment = slot.assignments.find(a => a.therapistId === t.id);
                             const assignmentStatus: AssignmentStatus = assignment?.status ?? "active";
+                            const staffUnavail = isOnUnavailableDay(t.id, slot.date);
                             return (
                               <AssignmentStatusPopover key={t.id} slotId={slot.id} therapistId={t.id} therapistName={t.name} currentStatus={assignmentStatus}>
-                                <span className="inline-flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1">
                                   <span className={cn(
                                     "text-[10px] leading-none",
                                     assignmentStatus === "active" ? "text-foreground/60" :
@@ -247,6 +248,16 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                                   )}>
                                     {t.name}
                                   </span>
+                                  {staffUnavail && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                        <AlertTriangle className="h-2.5 w-2.5 text-warning-foreground shrink-0" />
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="text-xs">
+                                        {t.name} prefers not to work this day
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
                                   <StatusPill status={assignmentStatus} />
                                 </span>
                               </AssignmentStatusPopover>
