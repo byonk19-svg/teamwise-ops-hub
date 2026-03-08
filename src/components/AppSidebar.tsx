@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   Shield,
+  CalendarRange,
 } from "lucide-react";
 
 const managerNav = [
