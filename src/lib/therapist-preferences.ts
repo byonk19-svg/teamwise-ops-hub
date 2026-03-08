@@ -2,12 +2,14 @@ import { Therapist } from "./schedule-data";
 
 export interface TherapistPreferences {
   preferredDays: number[]; // 0=Sun..6=Sat
+  unavailableDays: number[]; // days they prefer NOT to work
   preferredWeekends: "every" | "alternating" | "none" | "as-needed";
   notes: string;
 }
 
 const defaults: TherapistPreferences = {
   preferredDays: [1, 2, 3, 4, 5],
+  unavailableDays: [],
   preferredWeekends: "as-needed",
   notes: "",
 };
