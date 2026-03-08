@@ -434,6 +434,7 @@ function ManagerSwapCard({
                 Lead
               </span>
             )}
+            <ManagerSwapModeBadge mode={swap.mode} />
             <span className="text-[10px] text-muted-foreground">
               {formatDistanceToNow(postedAt, { addSuffix: true })}
             </span>
@@ -455,6 +456,24 @@ function ManagerSwapCard({
             </div>
             <span className="text-xs text-muted-foreground">{swap.reason}</span>
           </div>
+
+          {/* Trade info */}
+          {swap.mode === "trade" && swap.tradeShiftDate && (
+            <div className="flex items-center gap-2 mb-2">
+              <Repeat2 className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">In exchange for:</span>
+              <div className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5">
+                {swap.tradeShiftType === "day" ? (
+                  <Sun className="h-2.5 w-2.5 text-warning" />
+                ) : (
+                  <Moon className="h-2.5 w-2.5 text-primary" />
+                )}
+                <span className="text-[10px] font-medium text-foreground">
+                  {format(parseISO(swap.tradeShiftDate), "EEE, MMM d")}
+                </span>
+              </div>
+            </div>
+          )}
 
           {claimer && (
             <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-1.5">
