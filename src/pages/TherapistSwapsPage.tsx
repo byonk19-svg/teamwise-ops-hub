@@ -506,6 +506,11 @@ function PostSwapDialog({
     [currentUserId]
   );
 
+  const schedule = useMemo(
+    () => generateSchedule(SCHEDULE_CYCLE_START, 6),
+    []
+  );
+
   const upcomingDates = useMemo(() => {
     const dates: string[] = [];
     const base = SCHEDULE_CYCLE_START;
