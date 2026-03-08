@@ -11,7 +11,6 @@ import {
   Users,
   ArrowLeftRight,
   Shield,
-  Activity,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,42 +18,36 @@ import { motion, AnimatePresence } from "framer-motion";
 const floatingCards = [
   {
     icon: CalendarDays,
-    title: "Next Shift",
-    detail: "Tomorrow · 7:00 AM – 3:00 PM",
+    title: "Schedule",
+    detail: "View & manage weekly shifts",
     color: "bg-sidebar-accent",
-    position: "top-[15%] left-[8%]",
+    position: "top-[18%] left-[8%]",
     delay: 0.6,
   },
   {
     icon: ArrowLeftRight,
-    title: "Swap Request",
-    detail: "Aleyce → Jordan · Pending",
+    title: "Swaps",
+    detail: "Request & approve trades",
     color: "bg-sidebar-ring/20",
-    position: "top-[38%] right-[6%]",
+    position: "top-[40%] right-[6%]",
     delay: 0.8,
   },
   {
     icon: Users,
-    title: "Coverage",
-    detail: "12/14 shifts filled",
+    title: "Team",
+    detail: "See who's on today",
     color: "bg-sidebar-accent",
-    position: "bottom-[28%] left-[12%]",
+    position: "bottom-[32%] left-[12%]",
     delay: 1.0,
   },
   {
-    icon: Activity,
-    title: "Team Status",
-    detail: "All clear · No gaps",
+    icon: Clock,
+    title: "Availability",
+    detail: "Set your preferred hours",
     color: "bg-sidebar-ring/20",
-    position: "bottom-[12%] right-[10%]",
+    position: "bottom-[14%] right-[10%]",
     delay: 1.2,
   },
-];
-
-const stats = [
-  { value: "98%", label: "Coverage rate" },
-  { value: "2min", label: "Avg. swap time" },
-  { value: "40+", label: "Teams active" },
 ];
 
 export default function AuthPage() {
@@ -159,7 +152,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Headline + stats */}
+        {/* Headline */}
         <div className="relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -167,32 +160,12 @@ export default function AuthPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h1 className="text-5xl font-bold leading-[1.1] text-sidebar-primary mb-3 tracking-tight">
-              Scheduling that<br />
-              <span className="text-sidebar-ring">works for everyone.</span>
+              Your team,<br />
+              <span className="text-sidebar-ring">organized.</span>
             </h1>
-            <p className="text-sidebar-muted text-base max-w-md leading-relaxed mb-8">
-              Coordinate your respiratory therapy team with confidence.
-              Less admin, more patient care.
+            <p className="text-sidebar-muted text-base max-w-md leading-relaxed">
+              Everything you need to manage schedules, availability, and shift changes — all in one place.
             </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex items-center gap-8"
-          >
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 + i * 0.1 }}
-              >
-                <p className="text-2xl font-bold text-sidebar-primary">{stat.value}</p>
-                <p className="text-xs text-sidebar-muted">{stat.label}</p>
-              </motion.div>
-            ))}
           </motion.div>
         </div>
       </div>
