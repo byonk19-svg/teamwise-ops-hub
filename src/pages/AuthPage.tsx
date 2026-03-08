@@ -84,7 +84,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Left panel — immersive branding */}
       <div className="hidden lg:flex lg:w-[55%] bg-sidebar relative overflow-hidden flex-col justify-between p-14">
         {/* Layered background shapes */}
