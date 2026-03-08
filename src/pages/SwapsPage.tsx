@@ -330,110 +330,98 @@ export default function ManagerSwapsPage() {
   );
 }
 
-function CoverageImpactBadge({ impact }: { impact: CoverageImpact }) {
-  const warnings: string[] = [];
-  let severity: "ok" | "warning" | "error" = "ok";
-
-  if (impact.afterStaff < impact.minStaff) {
-    warnings.push(`Drops to ${impact.afterStaff}/${impact.minStaff} staff`);
-    severity = "error";
-  }
-
-  if (impact.needsLead && impact.hasLeadBefore && !impact.hasLeadAfter) {
-    warnings.push("Loses lead coverage");
-    severity = "error";
-  }
-
-  if (impact.claimerAlreadyScheduled) {
-    warnings.push("Claimer already on this shift");
-    severity = severity === "ok" ? "warning" : severity;
-  }
-
-  if (impact.requesterIsLead && !impact.claimerIsLead && impact.needsLead) {
-    if (impact.hasLeadAfter) {
-      // Another lead exists, just note the role change
-    } else {
-      warnings.push("Lead replaced by staff");
-      severity = severity === "ok" ? "warning" : severity;
-    }
-  }
-
-  const isOk = severity === "ok";
-  const afterOk = impact.afterStaff >= impact.minStaff;
+function SwapCoveragePanel({ impact }: { impact: SwapImpact }) {
+  const hasTrade = impact.tradeReturn !== null;
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border px-3 py-2 mt-2",
-        severity === "ok" && "bg-success/5 border-success/20",
-        severity === "warning" && "bg-warning/5 border-warning/20",
-        severity === "error" && "bg-destructive/5 border-destructive/20"
-      )}
-    >
-      <div className="flex items-center gap-2 mb-1">
-        {severity === "ok" ? (
-          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
-        ) : severity === "warning" ? (
-          <AlertTriangle className="h-3 w-3 text-warning flex-shrink-0" />
+    <div className={cn(
+      "rounded-lg border px-3 py-2.5 mt-2",
+      impact.overallSeverity === "ok" && "bg-success/5 border-success/20",
+      impact.overallSeverity === "warning" && "bg-warning/5 border-warning/20",
+      impact.overallSeverity === "error" && "bg-destructive/5 border-destructive/20"
+    )}>
+      {/* Overall header */}
+      <div className="flex items-center gap-2 mb-2">
+        {impact.overallSeverity === "ok" ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-success flex-shrink-0" />
+        ) : impact.overallSeverity === "warning" ? (
+          <AlertTriangle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
         ) : (
-          <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />
+          <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
         )}
-        <span
-          className={cn(
-            "text-[11px] font-semibold",
-            severity === "ok" && "text-success",
-            severity === "warning" && "text-warning-foreground",
-            severity === "error" && "text-destructive"
-          )}
-        >
-          {isOk ? "No coverage impact" : warnings.length === 1 ? warnings[0] : `${warnings.length} concerns`}
+        <span className={cn(
+          "text-[11px] font-semibold",
+          impact.overallSeverity === "ok" && "text-success",
+          impact.overallSeverity === "warning" && "text-warning-foreground",
+          impact.overallSeverity === "error" && "text-destructive"
+        )}>
+          {impact.overallSeverity === "ok"
+            ? hasTrade ? "Both shifts fully covered" : "No coverage impact"
+            : hasTrade ? "Coverage concern on one or more shifts" : "Coverage concern"}
         </span>
       </div>
 
-      <div className="flex items-center gap-3 text-[10px]">
-        {/* Staff count */}
-        <div className="flex items-center gap-1">
-          <Users className="h-3 w-3 text-muted-foreground" />
-          <span className="text-muted-foreground">Staff:</span>
-          <span className="font-semibold tabular-nums">{impact.currentStaff}</span>
-          <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
-          <span
-            className={cn(
-              "font-semibold tabular-nums",
-              afterOk ? "text-success" : "text-destructive"
-            )}
-          >
-            {impact.afterStaff}
-          </span>
-          <span className="text-muted-foreground">/ {impact.minStaff} min</span>
-        </div>
+      {/* Shift rows */}
+      <div className={cn("space-y-1.5", hasTrade && "")}>
+        {impact.primary && (
+          <ShiftCoverageRow
+            impact={impact.primary}
+            direction={hasTrade ? "gives up" : undefined}
+          />
+        )}
+        {impact.tradeReturn && (
+          <ShiftCoverageRow
+            impact={impact.tradeReturn}
+            direction="takes over"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
-        {/* Lead status */}
-        {impact.needsLead && (
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3 text-muted-foreground" />
-            <span className="text-muted-foreground">Lead:</span>
-            <span
-              className={cn(
-                "font-semibold",
-                impact.hasLeadAfter ? "text-success" : "text-destructive"
-              )}
-            >
-              {impact.hasLeadAfter ? "Covered" : "Missing"}
-            </span>
-          </div>
+function ShiftCoverageRow({ impact, direction }: { impact: CoverageImpact; direction?: string }) {
+  const severity = getImpactSeverity(impact);
+  const afterOk = impact.afterStaff >= impact.minStaff;
+  const leadOk = !impact.needsLead || impact.hasLeadAfter;
+
+  return (
+    <div className={cn(
+      "flex items-center gap-2 rounded-md px-2 py-1.5 text-[10px]",
+      severity === "ok" ? "bg-success/5" : severity === "warning" ? "bg-warning/5" : "bg-destructive/5"
+    )}>
+      {/* Shift label */}
+      <div className="flex items-center gap-1.5 min-w-0">
+        {severity === "ok" ? (
+          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
+        ) : (
+          <AlertTriangle className={cn("h-3 w-3 flex-shrink-0", severity === "warning" ? "text-warning" : "text-destructive")} />
+        )}
+        <span className="font-medium text-foreground whitespace-nowrap">{impact.label}</span>
+        {direction && (
+          <span className="text-muted-foreground italic">({direction})</span>
         )}
       </div>
 
-      {warnings.length > 1 && (
-        <ul className="mt-1.5 space-y-0.5">
-          {warnings.map((w, i) => (
-            <li key={i} className="text-[10px] text-destructive/80 flex items-center gap-1">
-              <span className="h-1 w-1 rounded-full bg-destructive/50" />
-              {w}
-            </li>
-          ))}
-        </ul>
+      {/* Staff count */}
+      <div className="flex items-center gap-1 ml-auto">
+        <Users className="h-3 w-3 text-muted-foreground" />
+        <span className="tabular-nums font-semibold">{impact.currentStaff}</span>
+        <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
+        <span className={cn("tabular-nums font-semibold", afterOk ? "text-success" : "text-destructive")}>
+          {impact.afterStaff}
+        </span>
+        <span className="text-muted-foreground">/ {impact.minStaff}</span>
+      </div>
+
+      {/* Lead */}
+      {impact.needsLead && (
+        <div className="flex items-center gap-1">
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className={cn("font-semibold", leadOk ? "text-success" : "text-destructive")}>
+            {leadOk ? "✓" : "✗"}
+          </span>
+        </div>
       )}
     </div>
   );
