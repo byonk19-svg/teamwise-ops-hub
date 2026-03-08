@@ -153,7 +153,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Headline + stats */}
+        {/* Headline */}
         <div className="relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -161,32 +161,12 @@ export default function AuthPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h1 className="text-5xl font-bold leading-[1.1] text-sidebar-primary mb-3 tracking-tight">
-              Scheduling that<br />
-              <span className="text-sidebar-ring">works for everyone.</span>
+              Your team,<br />
+              <span className="text-sidebar-ring">organized.</span>
             </h1>
-            <p className="text-sidebar-muted text-base max-w-md leading-relaxed mb-8">
-              Coordinate your respiratory therapy team with confidence.
-              Less admin, more patient care.
+            <p className="text-sidebar-muted text-base max-w-md leading-relaxed">
+              Everything you need to manage schedules, availability, and shift changes — all in one place.
             </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex items-center gap-8"
-          >
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 + i * 0.1 }}
-              >
-                <p className="text-2xl font-bold text-sidebar-primary">{stat.value}</p>
-                <p className="text-xs text-sidebar-muted">{stat.label}</p>
-              </motion.div>
-            ))}
           </motion.div>
         </div>
       </div>
