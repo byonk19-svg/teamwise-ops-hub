@@ -23,6 +23,7 @@ export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
+  const [issuesOnly, setIssuesOnly] = useState(false);
   const undoStack = useRef<HistoryEntry[]>([]);
 
   const issueCount = useMemo(() => {
@@ -125,10 +126,19 @@ export default function SchedulePage() {
             </div>
 
             {issueCount > 0 && (
-              <StatusBadge variant="error">
+              <button
+                onClick={() => setIssuesOnly((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors border",
+                  issuesOnly
+                    ? "bg-destructive/10 border-destructive/25 text-destructive"
+                    : "bg-card border-border text-muted-foreground hover:text-foreground"
+                )}
+              >
                 <AlertTriangle className="h-3 w-3" />
                 {issueCount} {issueCount === 1 ? "issue" : "issues"}
-              </StatusBadge>
+                {issuesOnly && " · showing"}
+              </button>
             )}
           </div>
         </motion.div>
@@ -140,6 +150,7 @@ export default function SchedulePage() {
             shiftView={shiftView}
             cycleStart={CYCLE_START}
             totalWeeks={TOTAL_WEEKS}
+            issuesOnly={issuesOnly}
             onClickSlot={setEditingSlot}
           />
         </div>

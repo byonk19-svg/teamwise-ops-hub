@@ -10,10 +10,11 @@ interface ViewCProps {
   shiftView: "day" | "night";
   cycleStart: Date;
   totalWeeks: number;
+  issuesOnly?: boolean;
   onClickSlot: (slot: ShiftSlot) => void;
 }
 
-export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClickSlot }: ViewCProps) {
+export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issuesOnly = false, onClickSlot }: ViewCProps) {
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
   const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const focusedIndex = useRef<number>(0);
@@ -98,6 +99,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
                   const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
                   const today = isToday(date);
                   const weekend = isWeekend(date);
+                  const dimmed = issuesOnly && status === "ok";
 
                   return (
                     <button
@@ -119,7 +121,8 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
                         status === "ok" && weekend && "bg-muted/40 border-border/70",
                         status === "warning" && "bg-warning/5 border-warning/25",
                         status === "error" && "bg-destructive/4 border-destructive/25",
-                        today && "ring-2 ring-primary/30 shadow-sm"
+                        today && "ring-2 ring-primary/30 shadow-sm",
+                        dimmed && "opacity-25 hover:opacity-60"
                       )}
                     >
                       {/* Date header */}
