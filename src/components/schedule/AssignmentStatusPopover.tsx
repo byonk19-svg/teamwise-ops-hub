@@ -47,7 +47,7 @@ export function AssignmentStatusPopover({
 
   // The effective status shown (pending or current)
   const effectiveStatus = pendingStatus ?? currentStatus;
-  const showReplaceLead = isLead && (effectiveStatus === "cancelled" || effectiveStatus === "call-in");
+  const needsReplacement = isLead && (effectiveStatus === "cancelled" || effectiveStatus === "call-in" || effectiveStatus === "on-call");
 
   // Available replacement leads: lead-role therapists not already on this shift (or cancelled/call-in)
   const replacementLeads = THERAPISTS.filter(
@@ -55,12 +55,11 @@ export function AssignmentStatusPopover({
   );
 
   const handleStatusClick = (status: AssignmentStatus) => {
-    if (isLead && (status === "cancelled" || status === "call-in")) {
+    setAssignmentStatus(slotId, therapistId, status);
+    if (isLead && (status === "cancelled" || status === "call-in" || status === "on-call")) {
       // Don't close yet — show replacement picker
-      setAssignmentStatus(slotId, therapistId, status);
       setPendingStatus(status);
     } else {
-      setAssignmentStatus(slotId, therapistId, status);
       setPendingStatus(null);
       setOpen(false);
     }
