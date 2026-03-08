@@ -538,8 +538,8 @@ function ManagerSwapCard({
           )}
 
           {/* Coverage Impact */}
-          {impact && swap.status === "claimed" && (
-            <CoverageImpactBadge impact={impact} />
+          {impact && (swap.status === "claimed" || swap.status === "pending_peer") && (
+            <SwapCoveragePanel impact={impact} />
           )}
         </div>
 
