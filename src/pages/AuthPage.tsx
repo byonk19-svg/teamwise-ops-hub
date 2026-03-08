@@ -4,31 +4,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarDays, Loader2, Shield } from "lucide-react";
+import { CalendarDays, Loader2, Shield, Clock, Users, ArrowLeftRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Mock calendar grid data matching the real schedule format
-const MOCK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const mockWeeks = [
-  [
-    { day: 9, count: "3/4", status: "warning" as const, lead: "BY", staff: ["AL", "LW"] },
-    { day: 10, count: "4/4", status: "ok" as const, lead: "KM", staff: ["IR", "TN", "LN"] },
-    { day: 11, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR"] },
-    { day: 12, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
-    { day: 13, count: "2/4", status: "error" as const, lead: null, staff: ["AL"] },
-    { day: 14, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN"] },
-    { day: 15, count: "3/4", status: "ok" as const, lead: "KM", staff: ["TN", "LW"] },
-  ],
-  [
-    { day: 16, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR", "LN"] },
-    { day: 17, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
-    { day: 18, count: "3/4", status: "warning" as const, lead: "KM", staff: ["AL"] },
-    { day: 19, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN", "TN"] },
-    { day: 20, count: "4/4", status: "ok" as const, lead: "BA", staff: ["LW", "AL"] },
-    { day: 21, count: "4/4", status: "ok" as const, lead: "BY", staff: ["IR", "TN"] },
-    { day: 22, count: "3/4", status: "ok" as const, lead: "KM", staff: ["LN", "LW"] },
-  ],
+const floatingCards = [
+  {
+    icon: CalendarDays,
+    title: "Schedule",
+    detail: "View & manage weekly shifts",
+    color: "bg-sidebar-accent",
+    position: "top-[20%] left-[10%]",
+    delay: 0.6,
+  },
+  {
+    icon: ArrowLeftRight,
+    title: "Swaps",
+    detail: "Request & approve trades",
+    color: "bg-sidebar-ring/20",
+    position: "top-[20%] right-[10%]",
+    delay: 0.8,
+  },
+  {
+    icon: Users,
+    title: "Team",
+    detail: "See who's on today",
+    color: "bg-sidebar-accent",
+    position: "bottom-[20%] left-[10%]",
+    delay: 1.0,
+  },
+  {
+    icon: Clock,
+    title: "Availability",
+    detail: "Set your preferred hours",
+    color: "bg-sidebar-ring/20",
+    position: "bottom-[20%] right-[10%]",
+    delay: 1.2,
+  },
 ];
 
 export default function AuthPage() {
@@ -72,7 +84,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Left panel — immersive branding */}
       <div className="hidden lg:flex lg:w-[55%] bg-sidebar relative overflow-hidden flex-col justify-between p-14">
         {/* Layered background shapes */}
@@ -104,86 +116,30 @@ export default function AuthPage() {
           </span>
         </motion.div>
 
-        {/* Calendar grid mockup */}
-        <div className="relative z-10 flex-1 my-8 flex items-center justify-center">
-          <div className="w-full max-w-md">
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-sidebar-accent/50 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/15 overflow-hidden"
-            >
-              <div className="px-4 py-3 flex items-center justify-between border-b border-white/[0.06]">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-sidebar-accent-foreground" />
-                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Day Shift</span>
+        {/* Floating feature cards */}
+        <div className="relative z-10 flex-1 my-6">
+          <div className="relative h-full">
+            {floatingCards.map((card) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 24, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: card.delay,
+                  ease: [0.21, 0.47, 0.32, 0.98],
+                }}
+                className={`absolute ${card.position} ${card.color} backdrop-blur-sm rounded-xl px-5 py-4 shadow-xl shadow-black/10 border border-white/[0.06] max-w-[200px]`}
+              >
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <card.icon className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
+                  <span className="text-xs font-semibold text-sidebar-accent-foreground uppercase tracking-wide">
+                    {card.title}
+                  </span>
                 </div>
-                <span className="text-xs text-sidebar-muted">Mar 2026</span>
-              </div>
-
-              <div className="p-3">
-                {/* Day headers */}
-                <div className="grid grid-cols-7 gap-1.5 mb-2">
-                  {MOCK_DAYS.map((d) => (
-                    <div key={d} className="text-center text-[9px] font-semibold uppercase tracking-widest text-sidebar-muted">
-                      {d}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Week rows */}
-                {mockWeeks.map((week, wi) => (
-                  <div key={wi} className="mb-2 last:mb-0">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-wide">Wk {wi + 1}</span>
-                      <div className="flex-1 h-px bg-white/[0.06]" />
-                    </div>
-                    <div className="grid grid-cols-7 gap-1.5">
-                      {week.map((cell, di) => (
-                        <motion.div
-                          key={cell.day}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: 0.5 + wi * 0.15 + di * 0.03 }}
-                          className={`rounded-lg border p-1.5 ${
-                            cell.status === "ok"
-                              ? "bg-white/[0.03] border-white/[0.06]"
-                              : cell.status === "warning"
-                              ? "bg-amber-500/8 border-amber-500/20"
-                              : "bg-red-500/8 border-red-500/20"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-bold text-sidebar-primary/90">{cell.day}</span>
-                            <span className={`text-[9px] font-bold tabular-nums ${
-                              cell.status === "ok" ? "text-sidebar-ring" : cell.status === "warning" ? "text-amber-400" : "text-red-400"
-                            }`}>
-                              {cell.count}
-                            </span>
-                          </div>
-                          {cell.lead ? (
-                            <div className="text-[9px] font-semibold text-sidebar-accent-foreground bg-sidebar-ring/15 rounded px-1 py-0.5 text-center mb-0.5 truncate">
-                              {cell.lead}
-                            </div>
-                          ) : (
-                            <div className="text-[9px] font-semibold text-red-400/70 bg-red-500/10 rounded px-1 py-0.5 text-center mb-0.5">
-                              —
-                            </div>
-                          )}
-                          <div className="flex flex-wrap gap-0.5">
-                            {cell.staff.map((s) => (
-                              <span key={s} className="text-[8px] font-medium text-sidebar-primary/60 bg-white/[0.06] rounded px-1 py-px">
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+                <p className="text-sm text-sidebar-primary/80 font-medium">{card.detail}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
 
