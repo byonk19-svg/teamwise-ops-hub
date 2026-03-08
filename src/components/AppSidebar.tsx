@@ -8,11 +8,13 @@ import {
   Users,
   Settings,
   Shield,
+  CalendarRange,
 } from "lucide-react";
 
 const managerNav = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/schedule", icon: CalendarDays, label: "Schedule" },
+  { to: "/availability", icon: CalendarRange, label: "Availability" },
   { to: "/approvals", icon: ClipboardCheck, label: "Approvals" },
   { to: "/swaps", icon: ArrowLeftRight, label: "Shift Swaps" },
   { to: "/coverage", icon: Shield, label: "Coverage" },
