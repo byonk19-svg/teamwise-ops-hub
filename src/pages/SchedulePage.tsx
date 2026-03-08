@@ -5,14 +5,12 @@ import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
+import { ShiftSlot, getCoverageStatus } from "@/lib/schedule-data";
+import { useSchedule } from "@/context/ScheduleContext";
 import { Send, Printer, Sparkles, AlertTriangle, Undo2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const CYCLE_START = new Date(2026, 2, 22);
-const TOTAL_WEEKS = 6;
 
 interface HistoryEntry {
   slots: ShiftSlot[];
