@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ const openSwaps = [
 ];
 
 export default function TherapistHome() {
+  const navigate = useNavigate();
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-5xl">
@@ -69,7 +71,7 @@ export default function TherapistHome() {
               <p className="text-xs text-muted-foreground">Feb 15 – Mar 28 · Due by Jan 20</p>
             </div>
           </div>
-          <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/therapist/availability")}>
             Submit Availability
           </Button>
         </motion.div>

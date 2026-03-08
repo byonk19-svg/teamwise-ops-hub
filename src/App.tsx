@@ -7,6 +7,7 @@ import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
 import SchedulePage from "./pages/SchedulePage";
 import AvailabilityPage from "./pages/AvailabilityPage";
+import TherapistAvailabilityPage from "./pages/TherapistAvailabilityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/availability" element={<AvailabilityPage />} />
           <Route path="/therapist" element={<TherapistHome />} />
+          <Route path="/therapist/availability" element={<TherapistAvailabilityPage />} />
           <Route path="/therapist" element={<TherapistHome />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
