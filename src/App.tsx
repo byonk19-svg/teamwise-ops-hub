@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScheduleProvider } from "@/context/ScheduleContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import AuthPage from "./pages/AuthPage";
 import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
 import TherapistSchedulePage from "./pages/TherapistSchedulePage";
@@ -25,15 +27,16 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<ManagerHome />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/availability" element={<AvailabilityPage />} />
-            <Route path="/swaps" element={<SwapsPage />} />
-            <Route path="/team" element={<TeamPage />} />
-            <Route path="/therapist" element={<TherapistHome />} />
-            <Route path="/therapist/schedule" element={<TherapistSchedulePage />} />
-            <Route path="/therapist/availability" element={<TherapistAvailabilityPage />} />
-            <Route path="/therapist/swaps" element={<TherapistSwapsPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/" element={<ProtectedRoute><ManagerHome /></ProtectedRoute>} />
+            <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
+            <Route path="/availability" element={<ProtectedRoute><AvailabilityPage /></ProtectedRoute>} />
+            <Route path="/swaps" element={<ProtectedRoute><SwapsPage /></ProtectedRoute>} />
+            <Route path="/team" element={<ProtectedRoute><TeamPage /></ProtectedRoute>} />
+            <Route path="/therapist" element={<ProtectedRoute><TherapistHome /></ProtectedRoute>} />
+            <Route path="/therapist/schedule" element={<ProtectedRoute><TherapistSchedulePage /></ProtectedRoute>} />
+            <Route path="/therapist/availability" element={<ProtectedRoute><TherapistAvailabilityPage /></ProtectedRoute>} />
+            <Route path="/therapist/swaps" element={<ProtectedRoute><TherapistSwapsPage /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
