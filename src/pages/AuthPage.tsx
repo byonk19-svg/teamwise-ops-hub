@@ -99,7 +99,7 @@ export default function AuthPage() {
           </motion.div>
 
           {/* Hero copy */}
-          <div className="flex-1 flex flex-col justify-center max-w-[440px] -mt-6">
+          <div className="flex-1 flex flex-col justify-center max-w-[440px] mt-4">
             <motion.p
               {...fade(0.2)}
               className="text-[10px] font-bold uppercase tracking-[0.25em] text-sidebar-ring/80 mb-5"
