@@ -4,8 +4,9 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import { getTherapist, ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
+import { getTherapist, ShiftSlot, getCoverageStatus } from "@/lib/schedule-data";
 import { ShiftSwap, SwapMode, generateSwaps, getSwapStats, getSwapModeLabel } from "@/lib/swap-data";
+import { useSchedule } from "@/context/ScheduleContext";
 import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
@@ -25,8 +26,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const CYCLE_START = new Date(2026, 2, 22);
-const TOTAL_WEEKS = 6;
 
 interface CoverageImpact {
   label: string; // e.g. "Wed, Mar 25 · Day"
@@ -144,7 +143,7 @@ function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
 
 export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
-  const [schedule] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
+  const { slots: schedule, applySwap } = useSchedule();
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
 
@@ -172,12 +171,35 @@ export default function ManagerSwapsPage() {
   );
 
   function handleApprove(swapId: string) {
+    const swap = swaps.find((s) => s.id === swapId);
+    if (!swap) return;
+
+    // Apply primary shift: requester leaves, claimer joins
+    if (swap.claimedById) {
+      applySwap({
+        shiftDate: swap.shiftDate,
+        shiftType: swap.shiftType,
+        removedId: swap.requesterId,
+        addedId: swap.claimedById,
+      });
+    }
+
+    // Apply trade-return shift: claimer leaves, requester joins
+    if (swap.mode === "trade" && swap.tradeShiftDate && swap.tradeShiftType && swap.claimedById) {
+      applySwap({
+        shiftDate: swap.tradeShiftDate,
+        shiftType: swap.tradeShiftType,
+        removedId: swap.claimedById,
+        addedId: swap.requesterId,
+      });
+    }
+
     setSwaps((prev) =>
       prev.map((s) =>
         s.id === swapId ? { ...s, status: "approved" as const } : s
       )
     );
-    toast.success("Swap approved!");
+    toast.success("Swap approved — schedule updated!");
   }
 
   function handleReject(swapId: string) {

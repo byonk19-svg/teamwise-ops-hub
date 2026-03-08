@@ -5,14 +5,12 @@ import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
+import { ShiftSlot, getCoverageStatus } from "@/lib/schedule-data";
+import { useSchedule } from "@/context/ScheduleContext";
 import { Send, Printer, Sparkles, AlertTriangle, Undo2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const CYCLE_START = new Date(2026, 2, 22);
-const TOTAL_WEEKS = 6;
 
 interface HistoryEntry {
   slots: ShiftSlot[];
@@ -20,7 +18,9 @@ interface HistoryEntry {
 }
 
 export default function SchedulePage() {
-  const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
+  const { slots, setSlots, cycleStart, totalWeeks } = useSchedule();
+  const CYCLE_START = cycleStart;
+  const TOTAL_WEEKS = totalWeeks;
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
   const [issuesOnly, setIssuesOnly] = useState(false);
