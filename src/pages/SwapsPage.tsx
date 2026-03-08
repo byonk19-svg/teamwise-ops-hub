@@ -76,8 +76,8 @@ function computeImpact(
     hasLeadAfter,
     needsLead: slot.needsLead,
     claimerAlreadyScheduled,
-    requesterIsLead: requester?.role === "lead" ?? false,
-    claimerIsLead: claimer?.role === "lead" ?? false,
+    requesterIsLead: requester?.role === "lead" || false,
+    claimerIsLead: claimer?.role === "lead" || false,
   };
 }
 
