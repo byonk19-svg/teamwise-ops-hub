@@ -37,15 +37,9 @@ function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: 
           </Badge>
         </div>
 
-        {certs.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
-            {certs.map((cert) => (
-              <Badge key={cert} variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                {cert}
-              </Badge>
-            ))}
-          </div>
-        )}
+        </div>
+      </div>
+    </Card>
       </div>
     </Card>
   );
