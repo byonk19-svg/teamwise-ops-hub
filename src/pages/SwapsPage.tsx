@@ -15,77 +15,41 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  Filter,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
-type FilterTab = "all" | "open" | "claimed" | "approved";
-
-export default function SwapsPage() {
+export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
-  const [filter, setFilter] = useState<FilterTab>("all");
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
 
-  const filtered = useMemo(() => {
-    if (filter === "all") return swaps;
-    return swaps.filter((s) => s.status === filter);
-  }, [swaps, filter]);
-
-  // Current therapist (simulated as t5 - Aleyce for demo)
-  const currentUserId = "t5";
-
-  function handleClaim(swapId: string) {
-    setSwaps((prev) =>
-      prev.map((s) =>
-        s.id === swapId
-          ? {
-              ...s,
-              status: "claimed" as const,
-              claimedById: currentUserId,
-              claimedAt: new Date().toISOString(),
-            }
-          : s
-      )
-    );
-    toast.success("Shift claimed!", {
-      description: "Waiting for manager approval.",
-    });
-  }
-
-  function handleCancel(swapId: string) {
-    setSwaps((prev) =>
-      prev.map((s) =>
-        s.id === swapId ? { ...s, status: "cancelled" as const } : s
-      )
-    );
-    toast("Swap request cancelled");
-  }
+  const pendingApproval = useMemo(
+    () => swaps.filter((s) => s.status === "claimed"),
+    [swaps]
+  );
+  const openSwaps = useMemo(
+    () => swaps.filter((s) => s.status === "open"),
+    [swaps]
+  );
+  const resolved = useMemo(
+    () => swaps.filter((s) => s.status === "approved" || s.status === "rejected" || s.status === "cancelled"),
+    [swaps]
+  );
 
   function handleApprove(swapId: string) {
     setSwaps((prev) =>
-      prev.map((s) =>
-        s.id === swapId ? { ...s, status: "approved" as const } : s
-      )
+      prev.map((s) => (s.id === swapId ? { ...s, status: "approved" as const } : s))
     );
     toast.success("Swap approved!");
   }
 
   function handleReject(swapId: string) {
     setSwaps((prev) =>
-      prev.map((s) =>
-        s.id === swapId ? { ...s, status: "rejected" as const } : s
-      )
+      prev.map((s) => (s.id === swapId ? { ...s, status: "rejected" as const } : s))
     );
     toast("Swap rejected");
   }
-
-  const tabs: { key: FilterTab; label: string; count: number }[] = [
-    { key: "all", label: "All", count: swaps.length },
-    { key: "open", label: "Open", count: stats.open },
-    { key: "claimed", label: "Pending Approval", count: stats.claimed },
-    { key: "approved", label: "Approved", count: stats.approved },
-  ];
 
   return (
     <AppLayout>
@@ -102,71 +66,93 @@ export default function SwapsPage() {
                 Shift Swaps
               </h1>
               <p className="text-xs text-muted-foreground">
-                Post a shift you need covered or pick up an open shift from a teammate
+                Review and approve swap requests from your team
               </p>
             </div>
-            <Button
-              size="sm"
-              className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5" /> Post a Swap
-            </Button>
           </div>
 
-          {/* Filter tabs */}
-          <div className="flex items-center gap-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilter(tab.key)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                  filter === tab.key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {tab.label}
-                <span
-                  className={cn(
-                    "text-[10px] tabular-nums rounded-full px-1.5 py-0.5",
-                    filter === tab.key
-                      ? "bg-primary-foreground/20 text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            {stats.claimed > 0 && (
+              <StatusBadge variant="warning">
+                <Clock className="h-3 w-3" />
+                {stats.claimed} awaiting approval
+              </StatusBadge>
+            )}
+            <StatusBadge variant="info">
+              <ArrowLeftRight className="h-3 w-3" />
+              {stats.open} open
+            </StatusBadge>
+            <StatusBadge variant="success">
+              <CheckCircle2 className="h-3 w-3" />
+              {stats.approved} approved
+            </StatusBadge>
           </div>
         </motion.div>
 
-        {/* Swap Cards */}
-        <div className="flex-1 overflow-auto p-5">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <ArrowLeftRight className="h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-sm font-medium text-muted-foreground">No swaps in this category</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                Check other tabs or post a new swap request
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map((swap, i) => (
-                <SwapCard
-                  key={swap.id}
-                  swap={swap}
-                  index={i}
-                  currentUserId={currentUserId}
-                  onClaim={() => handleClaim(swap.id)}
-                  onCancel={() => handleCancel(swap.id)}
-                  onApprove={() => handleApprove(swap.id)}
-                  onReject={() => handleReject(swap.id)}
-                />
-              ))}
-            </div>
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-5 space-y-6">
+          {/* Pending Approval Section */}
+          {pendingApproval.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldCheck className="h-4 w-4 text-warning" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Needs Your Approval
+                </h2>
+                <span className="text-[10px] bg-warning/10 text-warning-foreground px-2 py-0.5 rounded-full font-medium">
+                  {pendingApproval.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {pendingApproval.map((swap, i) => (
+                  <ManagerSwapCard
+                    key={swap.id}
+                    swap={swap}
+                    index={i}
+                    onApprove={() => handleApprove(swap.id)}
+                    onReject={() => handleReject(swap.id)}
+                    highlight
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Open Swaps */}
+          {openSwaps.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <ArrowLeftRight className="h-4 w-4 text-primary" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Open Requests
+                </h2>
+                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  {openSwaps.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {openSwaps.map((swap, i) => (
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Resolved */}
+          {resolved.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-heading text-sm font-semibold text-muted-foreground">
+                  Resolved
+                </h2>
+              </div>
+              <div className="space-y-2">
+                {resolved.map((swap, i) => (
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} />
+                ))}
+              </div>
+            </section>
           )}
         </div>
       </div>
@@ -174,41 +160,35 @@ export default function SwapsPage() {
   );
 }
 
-function SwapCard({
+function ManagerSwapCard({
   swap,
   index,
-  currentUserId,
-  onClaim,
-  onCancel,
+  highlight,
   onApprove,
   onReject,
 }: {
   swap: ShiftSwap;
   index: number;
-  currentUserId: string;
-  onClaim: () => void;
-  onCancel: () => void;
-  onApprove: () => void;
-  onReject: () => void;
+  highlight?: boolean;
+  onApprove?: () => void;
+  onReject?: () => void;
 }) {
   const requester = getTherapist(swap.requesterId);
   const claimer = swap.claimedById ? getTherapist(swap.claimedById) : null;
   const shiftDate = parseISO(swap.shiftDate);
   const postedAt = parseISO(swap.postedAt);
-  const isOwn = swap.requesterId === currentUserId;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
+      initial={{ opacity: 0, y: 3 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: index * 0.03 }}
       className={cn(
         "rounded-lg border bg-card p-4 transition-colors",
-        swap.status === "open" && "border-primary/15 hover:border-primary/25",
-        swap.status === "claimed" && "border-warning/20",
-        swap.status === "approved" && "border-success/20",
-        swap.status === "rejected" && "border-destructive/15 opacity-60",
-        swap.status === "cancelled" && "border-border opacity-40"
+        highlight && "border-warning/30 bg-warning/3",
+        swap.status === "approved" && "opacity-70",
+        swap.status === "rejected" && "opacity-50",
+        swap.status === "cancelled" && "opacity-40"
       )}
     >
       <div className="flex items-start gap-4">
@@ -222,11 +202,10 @@ function SwapCard({
           </span>
         )}
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-medium text-foreground">
-              {requester?.name ?? "Unknown"}
+              {requester?.name}
             </span>
             {requester?.role === "lead" && (
               <span className="text-[10px] text-primary font-medium bg-primary/10 px-1.5 py-0.5 rounded">
@@ -238,7 +217,6 @@ function SwapCard({
             </span>
           </div>
 
-          {/* Shift info */}
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1">
               {swap.shiftType === "day" ? (
@@ -256,9 +234,8 @@ function SwapCard({
             <span className="text-xs text-muted-foreground">{swap.reason}</span>
           </div>
 
-          {/* Claimed info */}
           {claimer && (
-            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-1.5 mb-2">
+            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-1.5">
               <Hand className="h-3 w-3 text-primary" />
               <span
                 className="flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold text-primary-foreground"
@@ -269,88 +246,47 @@ function SwapCard({
               <span className="text-xs text-foreground">
                 <strong>{claimer.name}</strong> picked this up
               </span>
-              {swap.claimedAt && (
-                <span className="text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(parseISO(swap.claimedAt), { addSuffix: true })}
-                </span>
-              )}
             </div>
           )}
         </div>
 
         {/* Status + Actions */}
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
-          <StatusBadge
-            variant={
-              swap.status === "open"
-                ? "info"
-                : swap.status === "claimed"
-                ? "warning"
-                : swap.status === "approved"
-                ? "success"
-                : swap.status === "rejected"
-                ? "error"
-                : "neutral"
-            }
-          >
-            {swap.status === "open" && <ArrowLeftRight className="h-3 w-3" />}
-            {swap.status === "claimed" && <Clock className="h-3 w-3" />}
-            {swap.status === "approved" && <CheckCircle2 className="h-3 w-3" />}
-            {swap.status === "rejected" && <XCircle className="h-3 w-3" />}
-            {swap.status === "open" && "Open"}
-            {swap.status === "claimed" && "Pending"}
-            {swap.status === "approved" && "Approved"}
-            {swap.status === "rejected" && "Rejected"}
-            {swap.status === "cancelled" && "Cancelled"}
-          </StatusBadge>
+          <SwapStatusBadge status={swap.status} />
 
-          <div className="flex items-center gap-1.5">
-            {/* Therapist can claim open swaps (not their own) */}
-            {swap.status === "open" && !isOwn && (
+          {swap.status === "claimed" && onApprove && onReject && (
+            <div className="flex items-center gap-1.5">
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onReject}>
+                Reject
+              </Button>
               <Button
                 size="sm"
                 className="h-7 text-xs gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={onClaim}
+                onClick={onApprove}
               >
-                <Hand className="h-3 w-3" /> Pick Up
+                <CheckCircle2 className="h-3 w-3" /> Approve
               </Button>
-            )}
-
-            {/* Own open swap can be cancelled */}
-            {swap.status === "open" && isOwn && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={onCancel}
-              >
-                Cancel
-              </Button>
-            )}
-
-            {/* Manager can approve/reject claimed swaps */}
-            {swap.status === "claimed" && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={onReject}
-                >
-                  Reject
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-7 text-xs gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={onApprove}
-                >
-                  <CheckCircle2 className="h-3 w-3" /> Approve
-                </Button>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
+  const config = {
+    open: { variant: "info" as const, icon: ArrowLeftRight, label: "Open" },
+    claimed: { variant: "warning" as const, icon: Clock, label: "Pending" },
+    approved: { variant: "success" as const, icon: CheckCircle2, label: "Approved" },
+    rejected: { variant: "error" as const, icon: XCircle, label: "Rejected" },
+    cancelled: { variant: "neutral" as const, icon: XCircle, label: "Cancelled" },
+  }[status];
+
+  return (
+    <StatusBadge variant={config.variant}>
+      <config.icon className="h-3 w-3" />
+      {config.label}
+    </StatusBadge>
   );
 }
