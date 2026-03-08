@@ -325,22 +325,6 @@ export default function AuthPage() {
           </motion.div>
         </div>
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="px-8 py-5 flex items-center justify-between border-t border-border/60"
-        >
-          <div className="flex items-center gap-1.5 text-muted-foreground/50">
-            <Shield className="h-3 w-3" />
-            <span className="text-[11px]">HIPAA-friendly</span>
-          </div>
-          <button className="flex items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-            <HelpCircle className="h-3 w-3" />
-            <span className="text-[11px]">Need help?</span>
-          </button>
-        </motion.div>
       </div>
     </div>
   );
