@@ -1,14 +1,12 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { useLocation, NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   CalendarDays,
   ArrowLeftRight,
-  ClipboardCheck,
+  CalendarRange,
   Users,
   Settings,
-  Shield,
-  CalendarRange,
 } from "lucide-react";
 
 const managerNav = [
@@ -19,12 +17,53 @@ const managerNav = [
   { to: "/team", icon: Users, label: "Team" },
 ];
 
+const therapistNav = [
+  { to: "/therapist", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/therapist/schedule", icon: CalendarDays, label: "My Schedule" },
+  { to: "/therapist/availability", icon: CalendarRange, label: "Availability" },
+  { to: "/therapist/swaps", icon: ArrowLeftRight, label: "Shift Swaps" },
+];
+
 const bottomNav = [
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
+const therapistBottomNav = [
+  { to: "/therapist/settings", icon: Settings, label: "Settings" },
+];
+
+function NavItems({ items }: { items: typeof managerNav }) {
+  const location = useLocation();
+  return (
+    <>
+      {items.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
+            location.pathname === item.to
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          )}
+        >
+          <item.icon className="h-4 w-4" />
+          {item.label}
+        </NavLink>
+      ))}
+    </>
+  );
+}
+
 export function AppSidebar() {
   const location = useLocation();
+  const isTherapist = location.pathname.startsWith("/therapist");
+  const nav = isTherapist ? therapistNav : managerNav;
+  const bottom = isTherapist ? therapistBottomNav : bottomNav;
+  const roleLabel = isTherapist ? "My Shifts" : "Operations";
+  const userName = isTherapist ? "Aleyce L." : "Jamie Mitchell";
+  const userRole = isTherapist ? "Staff Therapist" : "Lead Therapist";
+  const userInitials = isTherapist ? "AL" : "JM";
 
   return (
     <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border">
@@ -42,51 +81,32 @@ export function AppSidebar() {
       {/* Main Nav */}
       <nav className="flex-1 px-3 py-2 space-y-0.5">
         <p className="px-2 pb-2 pt-3 text-[10px] font-medium uppercase tracking-wider text-sidebar-muted">
-          Operations
+          {roleLabel}
         </p>
-        {managerNav.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={cn(
-              "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
-              location.pathname === item.to
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </NavLink>
-        ))}
+        <NavItems items={nav} />
       </nav>
 
       {/* Bottom */}
       <div className="px-3 pb-4 space-y-0.5">
-        {bottomNav.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={cn(
-              "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
-              location.pathname === item.to
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </NavLink>
-        ))}
+        <NavItems items={bottom} />
+
+        {/* Role switcher (demo) */}
+        <NavLink
+          to={isTherapist ? "/" : "/therapist"}
+          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[11px] font-medium text-sidebar-muted hover:text-sidebar-foreground transition-colors"
+        >
+          <ArrowLeftRight className="h-3.5 w-3.5" />
+          Switch to {isTherapist ? "Manager" : "Therapist"} view
+        </NavLink>
 
         {/* User */}
         <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 mt-2 border-t border-sidebar-border pt-4">
           <div className="h-7 w-7 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-semibold text-sidebar-accent-foreground">
-            JM
+            {userInitials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-sidebar-primary truncate">Jamie Mitchell</p>
-            <p className="text-[10px] text-sidebar-muted truncate">Lead Therapist</p>
+            <p className="text-xs font-medium text-sidebar-primary truncate">{userName}</p>
+            <p className="text-[10px] text-sidebar-muted truncate">{userRole}</p>
           </div>
         </div>
       </div>
