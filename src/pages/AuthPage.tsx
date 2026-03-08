@@ -11,7 +11,6 @@ import {
   Users,
   ArrowLeftRight,
   Shield,
-  Activity,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
