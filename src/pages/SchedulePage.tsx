@@ -3,6 +3,7 @@ import { format, addDays, addWeeks } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
 import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
+import { AutoDraftDialog } from "@/components/schedule/AutoDraftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ShiftSlot, getCoverageStatus } from "@/lib/schedule-data";
