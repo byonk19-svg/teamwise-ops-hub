@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AssignmentStatus, ASSIGNMENT_STATUSES, THERAPISTS, Therapist, getTherapist } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
 import { cn } from "@/lib/utils";
-import { Check, Clock, PhoneOff, PhoneIncoming, PhoneCall, CircleCheck, Shield, ArrowRight } from "lucide-react";
+import { Check, Clock, PhoneOff, PhoneIncoming, PhoneCall, CircleCheck, Shield, ArrowRight, Undo2 } from "lucide-react";
 
 const STATUS_ICONS: Record<AssignmentStatus, React.ReactNode> = {
   active: <CircleCheck className="h-3.5 w-3.5" />,
