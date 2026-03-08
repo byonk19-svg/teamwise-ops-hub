@@ -18,7 +18,9 @@ interface HistoryEntry {
 }
 
 export default function SchedulePage() {
-  const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
+  const { slots, setSlots, cycleStart, totalWeeks } = useSchedule();
+  const CYCLE_START = cycleStart;
+  const TOTAL_WEEKS = totalWeeks;
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
   const [issuesOnly, setIssuesOnly] = useState(false);
