@@ -123,6 +123,12 @@ export default function AuthPage() {
               <br />
               coverage — <span className="text-sidebar-ring">in sync.</span>
             </motion.h1>
+            <motion.p
+              {...fade(0.28)}
+              className="text-[13px] text-sidebar-primary/30 mt-3 leading-relaxed"
+            >
+              Built for the teams that keep things running.
+            </motion.p>
           </div>
 
           {/* ── Product preview — bright, realistic ── */}
