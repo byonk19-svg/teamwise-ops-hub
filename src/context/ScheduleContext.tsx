@@ -18,6 +18,7 @@ interface ScheduleContextValue {
   swapDetails: Map<string, SwapDetail>;
   setSlots: React.Dispatch<React.SetStateAction<ShiftSlot[]>>;
   setAssignmentStatus: (slotId: string, therapistId: string, status: AssignmentStatus) => void;
+  replaceLead: (slotId: string, oldLeadId: string, newLeadId: string) => void;
   applySwap: (params: {
     shiftDate: string;
     shiftType: "day" | "night";
@@ -94,9 +95,26 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const replaceLead = useCallback(
+    (slotId: string, oldLeadId: string, newLeadId: string) => {
+      setSlots((prev) =>
+        prev.map((slot) => {
+          if (slot.id !== slotId) return slot;
+          // Keep old lead with their status (cancelled/call-in), add new lead
+          let assignments = [...slot.assignments];
+          if (!assignments.some((a) => a.therapistId === newLeadId)) {
+            assignments = [...assignments, { therapistId: newLeadId }];
+          }
+          return { ...slot, assignments };
+        })
+      );
+    },
+    []
+  );
+
   return (
     <ScheduleContext.Provider
-      value={{ slots, cycleStart: CYCLE_START, totalWeeks: TOTAL_WEEKS, swappedSlotIds, swapDetails, setSlots, setAssignmentStatus, applySwap }}
+      value={{ slots, cycleStart: CYCLE_START, totalWeeks: TOTAL_WEEKS, swappedSlotIds, swapDetails, setSlots, setAssignmentStatus, replaceLead, applySwap }}
     >
       {children}
     </ScheduleContext.Provider>

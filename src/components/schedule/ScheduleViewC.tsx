@@ -184,7 +184,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                             "bg-warning/6 border-warning/10"
                           )}>
                             <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
-                            <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead>
+                            <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead assignedIds={slot.assignments.map(a => a.therapistId)}>
                               <span className="inline-flex flex-col mt-0.5 gap-0.5">
                                 <span className={cn(
                                   "text-[11px] font-semibold leading-none",
