@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { THERAPISTS, Therapist } from "@/lib/schedule-data";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Shield, User } from "lucide-react";
+import { TherapistDetailDialog } from "@/components/team/TherapistDetailDialog";
 
 const CERTIFICATIONS: Record<string, string[]> = {
   t1: ["RRT", "NPS", "ACCS"],
@@ -17,15 +19,18 @@ const CERTIFICATIONS: Record<string, string[]> = {
   t9: ["CRT", "RRT"],
 };
 
-function TherapistCard({ therapist }: { therapist: Therapist }) {
+function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: () => void }) {
   const certs = CERTIFICATIONS[therapist.id] ?? [];
   const isLead = therapist.role === "lead";
 
   return (
-    <Card className={cn(
-      "p-5 flex gap-4 items-start transition-shadow hover:shadow-md",
-      isLead && "border-primary/20"
-    )}>
+    <Card
+      onClick={onClick}
+      className={cn(
+        "p-5 flex gap-4 items-start transition-shadow hover:shadow-md cursor-pointer",
+        isLead && "border-primary/20"
+      )}
+    >
       <div className={cn(
         "flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold",
         isLead
@@ -61,6 +66,8 @@ const leads = THERAPISTS.filter((t) => t.role === "lead");
 const staff = THERAPISTS.filter((t) => t.role === "staff");
 
 export default function TeamPage() {
+  const [selected, setSelected] = useState<Therapist | null>(null);
+
   return (
     <AppLayout>
       <div className="p-6 max-w-4xl">
@@ -70,17 +77,24 @@ export default function TeamPage() {
         <section className="mb-8">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Lead Therapists</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {leads.map((t) => <TherapistCard key={t.id} therapist={t} />)}
+            {leads.map((t) => <TherapistCard key={t.id} therapist={t} onClick={() => setSelected(t)} />)}
           </div>
         </section>
 
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Staff Therapists</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {staff.map((t) => <TherapistCard key={t.id} therapist={t} />)}
+            {staff.map((t) => <TherapistCard key={t.id} therapist={t} onClick={() => setSelected(t)} />)}
           </div>
         </section>
       </div>
+
+      <TherapistDetailDialog
+        therapist={selected}
+        certifications={selected ? CERTIFICATIONS[selected.id] ?? [] : []}
+        open={!!selected}
+        onOpenChange={(open) => { if (!open) setSelected(null); }}
+      />
     </AppLayout>
   );
 }
