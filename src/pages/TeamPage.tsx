@@ -7,20 +7,8 @@ import { cn } from "@/lib/utils";
 import { Shield, User } from "lucide-react";
 import { TherapistDetailDialog } from "@/components/team/TherapistDetailDialog";
 
-const CERTIFICATIONS: Record<string, string[]> = {
-  t1: ["RRT", "NPS", "ACCS"],
-  t2: ["RRT", "NPS"],
-  t3: ["RRT", "RPFT"],
-  t4: ["RRT", "NPS", "CPFT"],
-  t5: ["RRT"],
-  t6: ["RRT", "RPFT"],
-  t7: ["CRT"],
-  t8: ["RRT"],
-  t9: ["CRT", "RRT"],
-};
 
 function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: () => void }) {
-  const certs = CERTIFICATIONS[therapist.id] ?? [];
   const isLead = therapist.role === "lead";
 
   return (
@@ -47,16 +35,6 @@ function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: 
             {isLead ? <><Shield className="h-2.5 w-2.5 mr-0.5" />Lead</> : <><User className="h-2.5 w-2.5 mr-0.5" />Staff</>}
           </Badge>
         </div>
-
-        {certs.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
-            {certs.map((cert) => (
-              <Badge key={cert} variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                {cert}
-              </Badge>
-            ))}
-          </div>
-        )}
       </div>
     </Card>
   );
@@ -91,7 +69,7 @@ export default function TeamPage() {
 
       <TherapistDetailDialog
         therapist={selected}
-        certifications={selected ? CERTIFICATIONS[selected.id] ?? [] : []}
+        certifications={[]}
         open={!!selected}
         onOpenChange={(open) => { if (!open) setSelected(null); }}
       />
