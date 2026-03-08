@@ -2,10 +2,11 @@ import { useMemo, useRef, useCallback } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getActiveAssignmentCount, getLeadAssignment, getInactiveLeads, getStaffAssignments, AssignmentStatus, ASSIGNMENT_STATUSES } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { AssignmentStatusPopover, StatusPill } from "./AssignmentStatusPopover";
+import { isOnUnavailableDay } from "@/lib/therapist-preferences";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
