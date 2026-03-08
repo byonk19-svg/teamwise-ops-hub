@@ -17,6 +17,7 @@ interface ScheduleContextValue {
   swappedSlotIds: Set<string>;
   swapDetails: Map<string, SwapDetail>;
   setSlots: React.Dispatch<React.SetStateAction<ShiftSlot[]>>;
+  setAssignmentStatus: (slotId: string, therapistId: string, status: AssignmentStatus) => void;
   applySwap: (params: {
     shiftDate: string;
     shiftType: "day" | "night";
