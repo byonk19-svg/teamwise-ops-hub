@@ -309,7 +309,7 @@ export default function AuthPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
-                  Work email
+                  Email address
                 </Label>
                 <Input
                   id="email"
