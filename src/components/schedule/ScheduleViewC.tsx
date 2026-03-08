@@ -99,6 +99,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                   const cellIndex = weekStartIndex + di;
                   const status = getCoverageStatus(slot);
                   const lead = getLeadAssignment(slot);
+                  const inactiveLeads = getInactiveLeads(slot);
                   const staff = getStaffAssignments(slot);
                   const date = parseISO(slot.date);
                   const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
