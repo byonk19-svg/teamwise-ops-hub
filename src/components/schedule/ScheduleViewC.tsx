@@ -103,6 +103,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                   const today = isToday(date);
                   const weekend = isWeekend(date);
                   const dimmed = issuesOnly && status === "ok";
+                  const swapped = swappedSlotIds.has(slot.id);
 
                   return (
                     <button
@@ -115,13 +116,14 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                       tabIndex={cellIndex === 0 ? 0 : -1}
                       onClick={() => onClickSlot(slot)}
                       onKeyDown={(e) => handleKeyDown(e, cellIndex)}
-                      aria-label={`${format(date, "EEEE, MMMM d")} — ${slot.assignments.length} of ${slot.minStaff} staff assigned`}
+                      aria-label={`${format(date, "EEEE, MMMM d")} — ${slot.assignments.length} of ${slot.minStaff} staff assigned${swapped ? " (modified by swap)" : ""}`}
                       className={cn(
-                        "group rounded-lg border p-2.5 text-left transition-all duration-150",
+                        "group relative rounded-lg border p-2.5 text-left transition-all duration-150",
                         "hover:shadow-md hover:-translate-y-px hover:border-primary/25",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                        status === "ok" && "bg-card border-border",
-                        status === "ok" && weekend && "bg-muted/40 border-border/70",
+                        status === "ok" && !swapped && "bg-card border-border",
+                        status === "ok" && !swapped && weekend && "bg-muted/40 border-border/70",
+                        status === "ok" && swapped && "bg-accent/8 border-accent/30",
                         status === "warning" && "bg-warning/5 border-warning/25",
                         status === "error" && "bg-destructive/4 border-destructive/25",
                         today && "ring-2 ring-primary/30 shadow-sm",
