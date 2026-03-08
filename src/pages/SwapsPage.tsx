@@ -20,6 +20,8 @@ import {
   Shield,
   ArrowRight,
   Users,
+  UserCheck,
+  Repeat2,
 } from "lucide-react";
 import { toast } from "sonner";
 
