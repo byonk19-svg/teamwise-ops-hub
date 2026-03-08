@@ -5,15 +5,18 @@ import { cn } from "@/lib/utils";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+export type StaffDisplayMode = "initials" | "dots" | "text";
+
 interface ViewCProps {
   slots: ShiftSlot[];
   shiftView: "day" | "night";
   cycleStart: Date;
   totalWeeks: number;
+  staffDisplay: StaffDisplayMode;
   onClickSlot: (slot: ShiftSlot) => void;
 }
 
-export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClickSlot }: ViewCProps) {
+export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, staffDisplay, onClickSlot }: ViewCProps) {
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
 
   const weeks = useMemo(() => {
@@ -35,11 +38,10 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
         ))}
       </div>
 
-      {/* Week rows with generous spacing */}
+      {/* Week rows */}
       <div className="space-y-3">
         {weeks.map((week, wi) => (
           <div key={wi}>
-            {/* Week label */}
             <p className="text-[10px] font-medium text-muted-foreground mb-1.5 pl-0.5">
               Week {wi + 1}
             </p>
@@ -88,20 +90,43 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
                       </div>
                     ) : null}
 
-                    {/* Staff */}
-                    <div className="space-y-0.5">
-                      {staff.map((t) => (
-                        <div key={t.id} className="flex items-center gap-1">
-                          <span
-                            className="h-3.5 w-3.5 rounded-full text-[7px] font-bold flex items-center justify-center text-primary-foreground flex-shrink-0"
-                            style={{ backgroundColor: `hsl(${t.color})` }}
-                          >
-                            {t.initials}
-                          </span>
-                          <span className="text-[10px] text-foreground truncate">{t.name}</span>
-                        </div>
-                      ))}
-                    </div>
+                    {/* Staff - 3 display modes */}
+                    {staffDisplay === "initials" && (
+                      <div className="space-y-0.5">
+                        {staff.map((t) => (
+                          <div key={t.id} className="flex items-center gap-1">
+                            <span
+                              className="h-3.5 w-3.5 rounded-full text-[7px] font-bold flex items-center justify-center text-primary-foreground flex-shrink-0"
+                              style={{ backgroundColor: `hsl(${t.color})` }}
+                            >
+                              {t.initials}
+                            </span>
+                            <span className="text-[10px] text-foreground truncate">{t.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {staffDisplay === "dots" && (
+                      <div className="space-y-0.5">
+                        {staff.map((t) => (
+                          <div key={t.id} className="flex items-center gap-1.5">
+                            <span
+                              className="h-2 w-2 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: `hsl(${t.color})` }}
+                            />
+                            <span className="text-[10px] text-foreground truncate">{t.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {staffDisplay === "text" && staff.length > 0 && (
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        {staff.map((t) => t.name).join(", ")}
+                      </p>
+                    )}
+
                     {slot.assignments.length === 0 && (
                       <p className="text-[9px] text-destructive/40 mt-1">Unassigned</p>
                     )}
