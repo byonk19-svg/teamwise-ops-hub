@@ -264,7 +264,7 @@ export default function AuthPage() {
       {/* ═══════════════════════════════════════════
           RIGHT PANEL — Authentication
          ═══════════════════════════════════════════ */}
-      <div className="flex flex-1 flex-col bg-background relative overflow-hidden">
+      <div className="flex flex-1 flex-col bg-background relative overflow-y-auto">
         {/* Divider line */}
         <div className="absolute top-0 left-0 bottom-0 w-px bg-gradient-to-b from-border/0 via-border/60 to-border/0 hidden lg:block" />
         {/* Ambient depth */}
