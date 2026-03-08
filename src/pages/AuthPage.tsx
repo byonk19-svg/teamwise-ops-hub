@@ -113,116 +113,84 @@ export default function AuthPage() {
           </span>
         </motion.div>
 
-        {/* Stacked UI mockup */}
+        {/* Calendar grid mockup */}
         <div className="relative z-10 flex-1 my-8 flex items-center justify-center">
-          <div className="w-full max-w-md space-y-4">
-            {/* Schedule card */}
+          <div className="w-full max-w-md">
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-sidebar-accent/60 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/15 overflow-hidden"
+              className="bg-sidebar-accent/50 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/15 overflow-hidden"
             >
-              <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/[0.06]">
+              <div className="px-4 py-3 flex items-center justify-between border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-sidebar-accent-foreground" />
-                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Weekly Schedule</span>
+                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Day Shift</span>
                 </div>
-                <span className="text-xs text-sidebar-muted">Mar 10 – 13</span>
+                <span className="text-xs text-sidebar-muted">Mar 2026</span>
               </div>
-              <div className="px-5 py-3">
-                {/* Header row */}
-                <div className="grid grid-cols-4 gap-2 mb-2">
-                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Day</span>
-                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 1</span>
-                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 2</span>
-                  <span className="text-[10px] font-medium text-sidebar-muted uppercase tracking-wider">Slot 3</span>
-                </div>
-                {mockScheduleRows.map((row, i) => (
-                  <motion.div
-                    key={row.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.6 + i * 0.08 }}
-                    className="grid grid-cols-4 gap-2 py-1.5 border-t border-white/[0.04]"
-                  >
-                    <span className="text-xs font-medium text-sidebar-primary/90">{row.name}</span>
-                    {row.shifts.map((shift, j) => (
-                      <span
-                        key={j}
-                        className={`text-xs font-medium px-2 py-0.5 rounded-md text-center ${
-                          row.filled[j]
-                            ? "bg-sidebar-ring/20 text-sidebar-ring"
-                            : "bg-white/[0.04] text-sidebar-muted"
-                        }`}
-                      >
-                        {shift}
-                      </span>
-                    ))}
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
 
-            {/* Swap requests card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-sidebar-accent/40 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-xl shadow-black/10 overflow-hidden"
-            >
-              <div className="px-5 py-3 flex items-center justify-between border-b border-white/[0.06]">
-                <div className="flex items-center gap-2">
-                  <ArrowLeftRight className="h-4 w-4 text-sidebar-accent-foreground" />
-                  <span className="text-sm font-semibold text-sidebar-accent-foreground">Recent Swaps</span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-sidebar-muted" />
-              </div>
-              <div className="px-5 py-2.5 space-y-2">
-                {mockSwaps.map((swap, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.9 + i * 0.1 }}
-                    className="flex items-center justify-between py-1.5"
-                  >
-                    <div className="flex items-center gap-2 text-xs text-sidebar-primary/80">
-                      <span className="font-medium">{swap.from}</span>
-                      <ArrowLeftRight className="h-3 w-3 text-sidebar-muted" />
-                      <span className="font-medium">{swap.to}</span>
+              <div className="p-3">
+                {/* Day headers */}
+                <div className="grid grid-cols-7 gap-1.5 mb-2">
+                  {MOCK_DAYS.map((d) => (
+                    <div key={d} className="text-center text-[9px] font-semibold uppercase tracking-widest text-sidebar-muted">
+                      {d}
                     </div>
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        swap.status === "Approved"
-                          ? "bg-sidebar-ring/20 text-sidebar-ring"
-                          : "bg-sidebar-accent text-sidebar-accent-foreground"
-                      }`}
-                    >
-                      {swap.status === "Approved" && <Check className="h-2.5 w-2.5 inline mr-0.5 -mt-0.5" />}
-                      {swap.status}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+                  ))}
+                </div>
 
-            {/* Team status mini card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.9, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="flex items-center gap-4 bg-sidebar-accent/30 backdrop-blur-md rounded-2xl border border-white/[0.08] shadow-lg shadow-black/8 px-5 py-3.5"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-ring/15">
-                <Users className="h-4 w-4 text-sidebar-ring" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-sidebar-accent-foreground">Team Overview</p>
-                <p className="text-[11px] text-sidebar-muted">All shifts covered this week</p>
-              </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-ring/20">
-                <Check className="h-4 w-4 text-sidebar-ring" />
+                {/* Week rows */}
+                {mockWeeks.map((week, wi) => (
+                  <div key={wi} className="mb-2 last:mb-0">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-wide">Wk {wi + 1}</span>
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                    </div>
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {week.map((cell, di) => (
+                        <motion.div
+                          key={cell.day}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: 0.5 + wi * 0.15 + di * 0.03 }}
+                          className={`rounded-lg border p-1.5 ${
+                            cell.status === "ok"
+                              ? "bg-white/[0.03] border-white/[0.06]"
+                              : cell.status === "warning"
+                              ? "bg-amber-500/8 border-amber-500/20"
+                              : "bg-red-500/8 border-red-500/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-bold text-sidebar-primary/90">{cell.day}</span>
+                            <span className={`text-[9px] font-bold tabular-nums ${
+                              cell.status === "ok" ? "text-sidebar-ring" : cell.status === "warning" ? "text-amber-400" : "text-red-400"
+                            }`}>
+                              {cell.count}
+                            </span>
+                          </div>
+                          {cell.lead ? (
+                            <div className="text-[9px] font-semibold text-sidebar-accent-foreground bg-sidebar-ring/15 rounded px-1 py-0.5 text-center mb-0.5 truncate">
+                              {cell.lead}
+                            </div>
+                          ) : (
+                            <div className="text-[9px] font-semibold text-red-400/70 bg-red-500/10 rounded px-1 py-0.5 text-center mb-0.5">
+                              —
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-0.5">
+                            {cell.staff.map((s) => (
+                              <span key={s} className="text-[8px] font-medium text-sidebar-primary/60 bg-white/[0.06] rounded px-1 py-px">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
