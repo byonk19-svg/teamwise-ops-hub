@@ -140,11 +140,6 @@ export default function SchedulePage() {
                 {issuesOnly && " · showing"}
               </button>
             )}
-              <StatusBadge variant="error">
-                <AlertTriangle className="h-3 w-3" />
-                {issueCount} {issueCount === 1 ? "issue" : "issues"}
-              </StatusBadge>
-            )}
           </div>
         </motion.div>
 
