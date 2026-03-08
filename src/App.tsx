@@ -8,6 +8,7 @@ import TherapistHome from "./pages/TherapistHome";
 import SchedulePage from "./pages/SchedulePage";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import TherapistAvailabilityPage from "./pages/TherapistAvailabilityPage";
+import SwapsPage from "./pages/SwapsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
