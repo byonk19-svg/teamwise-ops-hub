@@ -121,7 +121,8 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                         status === "ok" && weekend && "bg-muted/40 border-border/70",
                         status === "warning" && "bg-warning/5 border-warning/25",
                         status === "error" && "bg-destructive/4 border-destructive/25",
-                        today && "ring-2 ring-primary/30 shadow-sm"
+                        today && "ring-2 ring-primary/30 shadow-sm",
+                        dimmed && "opacity-25 hover:opacity-60"
                       )}
                     >
                       {/* Date header */}
