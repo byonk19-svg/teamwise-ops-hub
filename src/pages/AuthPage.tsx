@@ -17,17 +17,27 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Fake schedule rows for the UI mockup
-const mockScheduleRows = [
-  { name: "Mon 3/10", shifts: ["7a–3p", "3p–11p", "—"], filled: [true, true, false] },
-  { name: "Tue 3/11", shifts: ["7a–3p", "7a–3p", "11p–7a"], filled: [true, true, true] },
-  { name: "Wed 3/12", shifts: ["—", "3p–11p", "7a–3p"], filled: [false, true, true] },
-  { name: "Thu 3/13", shifts: ["7a–3p", "3p–11p", "7a–3p"], filled: [true, true, true] },
-];
-
-const mockSwaps = [
-  { from: "Shift A", to: "Shift B", status: "Approved" },
-  { from: "Shift C", to: "Shift D", status: "Pending" },
+// Mock calendar grid data matching the real schedule format
+const MOCK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const mockWeeks = [
+  [
+    { day: 9, count: "3/4", status: "warning" as const, lead: "BY", staff: ["AL", "LW"] },
+    { day: 10, count: "4/4", status: "ok" as const, lead: "KM", staff: ["IR", "TN", "LN"] },
+    { day: 11, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR"] },
+    { day: 12, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
+    { day: 13, count: "2/4", status: "error" as const, lead: null, staff: ["AL"] },
+    { day: 14, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN"] },
+    { day: 15, count: "3/4", status: "ok" as const, lead: "KM", staff: ["TN", "LW"] },
+  ],
+  [
+    { day: 16, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR", "LN"] },
+    { day: 17, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
+    { day: 18, count: "3/4", status: "warning" as const, lead: "KM", staff: ["AL"] },
+    { day: 19, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN", "TN"] },
+    { day: 20, count: "4/4", status: "ok" as const, lead: "BA", staff: ["LW", "AL"] },
+    { day: 21, count: "4/4", status: "ok" as const, lead: "BY", staff: ["IR", "TN"] },
+    { day: 22, count: "3/4", status: "ok" as const, lead: "KM", staff: ["LN", "LW"] },
+  ],
 ];
 
 export default function AuthPage() {
