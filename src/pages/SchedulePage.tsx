@@ -91,7 +91,7 @@ export default function SchedulePage() {
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <Printer className="h-3.5 w-3.5" /> Print
               </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setAutoDraftOpen(true)}>
                 <Sparkles className="h-3.5 w-3.5" /> Auto-draft
               </Button>
               <Button size="sm" className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
