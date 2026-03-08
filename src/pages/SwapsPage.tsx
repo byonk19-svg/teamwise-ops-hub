@@ -145,7 +145,7 @@ function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
 
 export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
-  const [schedule] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
+  const { slots: schedule, applySwap } = useSchedule();
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
 
