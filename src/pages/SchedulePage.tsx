@@ -126,6 +126,20 @@ export default function SchedulePage() {
             </div>
 
             {issueCount > 0 && (
+              <button
+                onClick={() => setIssuesOnly((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors border",
+                  issuesOnly
+                    ? "bg-destructive/10 border-destructive/25 text-destructive"
+                    : "bg-card border-border text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <AlertTriangle className="h-3 w-3" />
+                {issueCount} {issueCount === 1 ? "issue" : "issues"}
+                {issuesOnly && " · showing"}
+              </button>
+            )}
               <StatusBadge variant="error">
                 <AlertTriangle className="h-3 w-3" />
                 {issueCount} {issueCount === 1 ? "issue" : "issues"}
