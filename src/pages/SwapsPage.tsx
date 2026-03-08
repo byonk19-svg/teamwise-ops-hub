@@ -253,7 +253,7 @@ export default function ManagerSwapsPage() {
                     key={swap.id}
                     swap={swap}
                     index={i}
-                    impact={computeImpact(schedule, swap)}
+                    impact={computeSwapImpact(schedule, swap)}
                     onApprove={() => handleApprove(swap.id)}
                     onReject={() => handleReject(swap.id)}
                     highlight
