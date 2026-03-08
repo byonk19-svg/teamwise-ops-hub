@@ -1,11 +1,11 @@
-import { addDays, format, startOfWeek } from "date-fns";
+import { addDays, format, startOfWeek, getDay } from "date-fns";
 
 export interface Therapist {
   id: string;
   name: string;
   initials: string;
   role: "lead" | "staff";
-  color: string;
+  color: string; // HSL values
 }
 
 export interface ShiftAssignment {
@@ -14,7 +14,7 @@ export interface ShiftAssignment {
 
 export interface ShiftSlot {
   id: string;
-  date: string; // ISO date string
+  date: string; // yyyy-MM-dd
   type: "day" | "night";
   assignments: ShiftAssignment[];
   minStaff: number;
@@ -22,63 +22,34 @@ export interface ShiftSlot {
   needsLead: boolean;
 }
 
-export type ScheduleWeek = ShiftSlot[];
-
 export const THERAPISTS: Therapist[] = [
-  { id: "t1", name: "Jamie Mitchell", initials: "JM", role: "lead", color: "187 55% 28%" },
-  { id: "t2", name: "Alex Chen", initials: "AC", role: "lead", color: "152 50% 38%" },
-  { id: "t3", name: "Sam Rivera", initials: "SR", role: "staff", color: "38 90% 45%" },
-  { id: "t4", name: "Jordan Lee", initials: "JL", role: "staff", color: "280 45% 45%" },
-  { id: "t5", name: "Taylor Brooks", initials: "TB", role: "staff", color: "0 55% 50%" },
-  { id: "t6", name: "Morgan Patel", initials: "MP", role: "staff", color: "210 50% 45%" },
-  { id: "t7", name: "Casey Wong", initials: "CW", role: "staff", color: "160 45% 40%" },
-  { id: "t8", name: "Riley Nguyen", initials: "RN", role: "staff", color: "30 60% 45%" },
+  { id: "t1", name: "Brianna", initials: "BY", role: "lead", color: "187 55% 28%" },
+  { id: "t2", name: "Kim", initials: "KM", role: "lead", color: "38 75% 45%" },
+  { id: "t3", name: "Barbara", initials: "BA", role: "lead", color: "152 50% 38%" },
+  { id: "t4", name: "Adrienne", initials: "AD", role: "lead", color: "280 45% 45%" },
+  { id: "t5", name: "Aleyce", initials: "AL", role: "staff", color: "210 50% 45%" },
+  { id: "t6", name: "Lynn", initials: "LW", role: "staff", color: "160 45% 40%" },
+  { id: "t7", name: "Irene", initials: "IR", role: "staff", color: "0 55% 50%" },
+  { id: "t8", name: "Tannie", initials: "TN", role: "staff", color: "30 60% 45%" },
+  { id: "t9", name: "Layne", initials: "LN", role: "staff", color: "260 40% 50%" },
 ];
-
-export function generateSchedule(startDate: Date, weeks: number = 6): ShiftSlot[] {
-  const start = startOfWeek(startDate, { weekStartsOn: 1 });
-  const slots: ShiftSlot[] = [];
-
-  for (let d = 0; d < weeks * 7; d++) {
-    const date = format(addDays(start, d), "yyyy-MM-dd");
-    const daySlot: ShiftSlot = {
-      id: `${date}-day`,
-      date,
-      type: "day",
-      assignments: [],
-      minStaff: 3,
-      maxStaff: 5,
-      needsLead: true,
-    };
-    const nightSlot: ShiftSlot = {
-      id: `${date}-night`,
-      date,
-      type: "night",
-      assignments: [],
-      minStaff: 2,
-      maxStaff: 4,
-      needsLead: true,
-    };
-
-    // Pre-populate some assignments for realism
-    if (d % 3 === 0) {
-      daySlot.assignments = [{ therapistId: "t1" }, { therapistId: "t3" }, { therapistId: "t5" }];
-      nightSlot.assignments = [{ therapistId: "t2" }, { therapistId: "t6" }];
-    } else if (d % 3 === 1) {
-      daySlot.assignments = [{ therapistId: "t2" }, { therapistId: "t4" }];
-      nightSlot.assignments = [{ therapistId: "t1" }, { therapistId: "t7" }, { therapistId: "t8" }];
-    } else {
-      // Leave some empty for coverage gaps
-      daySlot.assignments = [{ therapistId: "t3" }];
-      nightSlot.assignments = [];
-    }
-    slots.push(daySlot, nightSlot);
-  }
-  return slots;
-}
 
 export function getTherapist(id: string): Therapist | undefined {
   return THERAPISTS.find((t) => t.id === id);
+}
+
+export function getLeadAssignment(slot: ShiftSlot): Therapist | undefined {
+  for (const a of slot.assignments) {
+    const t = getTherapist(a.therapistId);
+    if (t?.role === "lead") return t;
+  }
+  return undefined;
+}
+
+export function getStaffAssignments(slot: ShiftSlot): Therapist[] {
+  return slot.assignments
+    .map((a) => getTherapist(a.therapistId))
+    .filter((t): t is Therapist => !!t && t.role === "staff");
 }
 
 export function getCoverageStatus(slot: ShiftSlot): "ok" | "warning" | "error" {
@@ -90,4 +61,74 @@ export function getCoverageStatus(slot: ShiftSlot): "ok" | "warning" | "error" {
   if (count === 0) return "error";
   if (count < slot.minStaff || !hasLead) return "warning";
   return "ok";
+}
+
+// Rotation patterns for realistic schedule generation
+const DAY_PATTERNS: string[][] = [
+  ["t1", "t5", "t7", "t9"],   // Brianna + Aleyce, Irene, Layne
+  ["t2", "t5", "t6", "t8"],   // Kim + Adrienne, Lynn, Tannie
+  ["t3", "t5", "t1", "t9"],   // Barbara + Aleyce, Brianna, Layne
+  ["t4", "t5", "t6", "t8"],   // Adrienne(lead) + Aleyce, Lynn, Tannie
+  ["t1", "t5", "t9", "t6"],   // Brianna + Aleyce, Layne, Lynn
+  ["t3", "t5", "t6", "t8"],   // Barbara + Aleyce, Lynn, Tannie
+  ["t2", "t5", "t6", "t8"],   // Kim + Adrienne, Lynn, Tannie
+];
+
+const NIGHT_PATTERNS: string[][] = [
+  ["t3", "t6", "t8"],
+  ["t1", "t5", "t9"],
+  ["t4", "t6", "t8"],
+  ["t2", "t5", "t9"],
+  ["t3", "t6", "t8"],
+  ["t1", "t5", "t9"],
+  ["t4", "t6", "t8"],
+];
+
+export function generateSchedule(startDate: Date, weeks: number = 6): ShiftSlot[] {
+  const start = startOfWeek(startDate, { weekStartsOn: 0 }); // Sunday start
+  const slots: ShiftSlot[] = [];
+
+  for (let d = 0; d < weeks * 7; d++) {
+    const date = format(addDays(start, d), "yyyy-MM-dd");
+    const dayOfWeek = getDay(addDays(start, d)); // 0=Sun, 6=Sat
+    const patternIdx = d % 7;
+
+    const isSaturday = dayOfWeek === 6;
+
+    // Day shift
+    const dayAssignments: ShiftAssignment[] = isSaturday
+      ? d % 21 === 0
+        ? [] // Some Saturdays empty
+        : [{ therapistId: "t2" }, { therapistId: "t7" }] // Reduced Sat staffing
+      : DAY_PATTERNS[patternIdx].map((id) => ({ therapistId: id }));
+
+    // Night shift
+    const nightAssignments: ShiftAssignment[] = isSaturday
+      ? []
+      : NIGHT_PATTERNS[patternIdx].map((id) => ({ therapistId: id }));
+
+    const minDay = isSaturday ? 1 : 4;
+    const minNight = isSaturday ? 1 : 3;
+
+    slots.push({
+      id: `${date}-day`,
+      date,
+      type: "day",
+      assignments: dayAssignments,
+      minStaff: minDay,
+      maxStaff: isSaturday ? 2 : 5,
+      needsLead: true,
+    });
+
+    slots.push({
+      id: `${date}-night`,
+      date,
+      type: "night",
+      assignments: nightAssignments,
+      minStaff: minNight,
+      maxStaff: isSaturday ? 2 : 4,
+      needsLead: true,
+    });
+  }
+  return slots;
 }
