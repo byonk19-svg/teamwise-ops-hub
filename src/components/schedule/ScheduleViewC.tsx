@@ -1,9 +1,10 @@
-import { useMemo, useRef, useCallback, useEffect } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -17,7 +18,7 @@ interface ViewCProps {
 }
 
 export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issuesOnly = false, onClickSlot }: ViewCProps) {
-  const { swappedSlotIds } = useSchedule();
+  const { swappedSlotIds, swapDetails } = useSchedule();
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
   const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const focusedIndex = useRef<number>(0);
@@ -130,12 +131,25 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                         dimmed && "opacity-25 hover:opacity-60"
                       )}
                     >
-                      {/* Swap indicator */}
-                      {swapped && (
-                        <div className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 rounded-full bg-accent/15 border border-accent/25" title="Modified by swap">
-                          <ArrowLeftRight className="h-2.5 w-2.5 text-accent-foreground" />
-                        </div>
-                      )}
+                      {/* Swap indicator with tooltip */}
+                      {swapped && (() => {
+                        const detail = swapDetails.get(slot.id);
+                        const tooltipText = detail
+                          ? `${detail.removedName}${detail.addedName ? ` → ${detail.addedName}` : " removed"} · Approved ${format(detail.approvedAt, "MMM d, h:mm a")}`
+                          : "Modified by swap";
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <div className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 rounded-full bg-accent/15 border border-accent/25 cursor-help">
+                                <ArrowLeftRight className="h-2.5 w-2.5 text-accent-foreground" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs max-w-[200px]">
+                              {tooltipText}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })()}
                       {/* Date header */}
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-baseline gap-1">
