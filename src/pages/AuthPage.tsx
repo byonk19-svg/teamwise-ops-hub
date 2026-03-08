@@ -33,6 +33,7 @@ const fade = (delay = 0) => ({
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -42,6 +43,22 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +79,6 @@ export default function AuthPage() {
         });
         if (error) throw error;
 
-        // Insert role and update profile with phone
         if (data.user) {
           await supabase.from("user_roles").insert({ user_id: data.user.id, role });
           await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
@@ -304,134 +320,197 @@ export default function AuthPage() {
 
               {/* Heading */}
               <h2 className="font-heading text-[1.6rem] font-bold text-foreground tracking-tight leading-snug">
-                {isLogin ? "Access your Teamwise workspace" : "Create your employee account"}
+                {isForgot
+                  ? "Reset your password"
+                  : isLogin
+                  ? "Access your Teamwise workspace"
+                  : "Create your employee account"}
               </h2>
               <p className="mt-1.5 text-[14px] text-muted-foreground leading-relaxed mb-6">
-                {isLogin
+                {isForgot
+                  ? "Enter your email and we'll send you a link to reset your password."
+                  : isLogin
                   ? "Sign in to view your schedule, manage availability, and coordinate with your team."
                   : "Set up your account to access schedules, shifts, and team coordination tools."}
               </p>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-3.5">
-                {/* Sign-up only fields */}
-                {!isLogin && (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="firstName" className="text-[13px] font-medium text-foreground/70">
-                          First name
-                        </Label>
-                        <Input
-                          id="firstName"
-                          placeholder="Jane"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          required
-                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="lastName" className="text-[13px] font-medium text-foreground/70">
-                          Last name
-                        </Label>
-                        <Input
-                          id="lastName"
-                          placeholder="Smith"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          required
-                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="phone" className="text-[13px] font-medium text-foreground/70">
-                        Phone number
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="(555) 123-4567"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="role" className="text-[13px] font-medium text-foreground/70">
-                        Your role
-                      </Label>
-                      <Select value={role} onValueChange={(v) => setRole(v as "manager" | "therapist")}>
-                        <SelectTrigger className="h-11 text-sm rounded-lg border-border/70 bg-background/80 shadow-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="therapist">Therapist / Staff</SelectItem>
-                          <SelectItem value="manager">Manager</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
-                    Email address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-[13px] font-medium text-foreground/70">
-                    Password
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-11 rounded-lg text-sm font-semibold gap-2 shadow-md hover:shadow-lg hover:brightness-110 transition-all mt-1"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
+              {/* Forgot password form */}
+              {isForgot ? (
+                <form onSubmit={handleForgotPassword} className="space-y-3.5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
+                      Email address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full h-11 rounded-lg text-sm font-semibold gap-2 shadow-md hover:shadow-lg hover:brightness-110 transition-all mt-1"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        Send reset link
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              ) : (
+                /* Main login / signup form */
+                <form onSubmit={handleSubmit} className="space-y-3.5">
+                  {/* Sign-up only fields */}
+                  {!isLogin && (
                     <>
-                      {isLogin ? "Sign in" : "Create account"}
-                      <ArrowRight className="h-3.5 w-3.5" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="firstName" className="text-[13px] font-medium text-foreground/70">
+                            First name
+                          </Label>
+                          <Input
+                            id="firstName"
+                            placeholder="Jane"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                            className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="lastName" className="text-[13px] font-medium text-foreground/70">
+                            Last name
+                          </Label>
+                          <Input
+                            id="lastName"
+                            placeholder="Smith"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                            className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phone" className="text-[13px] font-medium text-foreground/70">
+                          Phone number
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="(555) 123-4567"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="role" className="text-[13px] font-medium text-foreground/70">
+                          Your role
+                        </Label>
+                        <Select value={role} onValueChange={(v) => setRole(v as "manager" | "therapist")}>
+                          <SelectTrigger className="h-11 text-sm rounded-lg border-border/70 bg-background/80 shadow-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="therapist">Therapist / Staff</SelectItem>
+                            <SelectItem value="manager">Manager</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </>
                   )}
-                </Button>
-              </form>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
+                      Email address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-[13px] font-medium text-foreground/70">
+                        Password
+                      </Label>
+                      {isLogin && (
+                        <button
+                          type="button"
+                          onClick={() => setIsForgot(true)}
+                          className="text-[12px] font-medium text-primary/70 hover:text-primary transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-11 rounded-lg text-sm font-semibold gap-2 shadow-md hover:shadow-lg hover:brightness-110 transition-all mt-1"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        {isLogin ? "Sign in" : "Create account"}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
 
               {/* Toggle — inside card */}
               <div className="mt-5 pt-4 border-t border-border/40 text-center">
                 <p className="text-[13px] text-muted-foreground">
-                  {isLogin ? "Need access?" : "Already have an account?"}{" "}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="font-semibold text-primary hover:text-primary/80 transition-colors"
-                  >
-                    {isLogin ? "Create your employee account" : "Sign in instead"}
-                  </button>
+                  {isForgot ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsForgot(false)}
+                      className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                    >
+                      ← Back to sign in
+                    </button>
+                  ) : (
+                    <>
+                      {isLogin ? "Need access?" : "Already have an account?"}{" "}
+                      <button
+                        type="button"
+                        onClick={() => setIsLogin(!isLogin)}
+                        className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {isLogin ? "Create your employee account" : "Sign in instead"}
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
             </div>

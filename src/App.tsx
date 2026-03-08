@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScheduleProvider } from "@/context/ScheduleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
 import TherapistSchedulePage from "./pages/TherapistSchedulePage";
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<AuthPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><ManagerHome /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
             <Route path="/availability" element={<ProtectedRoute><AvailabilityPage /></ProtectedRoute>} />
