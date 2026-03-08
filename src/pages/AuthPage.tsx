@@ -8,27 +8,39 @@ import { CalendarDays, Loader2, Shield, Clock, Users, ArrowLeftRight } from "luc
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Mock calendar grid data matching the real schedule format
-const MOCK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const mockWeeks = [
-  [
-    { day: 9, count: "3/4", status: "warning" as const, lead: "BY", staff: ["AL", "LW"] },
-    { day: 10, count: "4/4", status: "ok" as const, lead: "KM", staff: ["IR", "TN", "LN"] },
-    { day: 11, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR"] },
-    { day: 12, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
-    { day: 13, count: "2/4", status: "error" as const, lead: null, staff: ["AL"] },
-    { day: 14, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN"] },
-    { day: 15, count: "3/4", status: "ok" as const, lead: "KM", staff: ["TN", "LW"] },
-  ],
-  [
-    { day: 16, count: "4/4", status: "ok" as const, lead: "BA", staff: ["AL", "IR", "LN"] },
-    { day: 17, count: "4/4", status: "ok" as const, lead: "BY", staff: ["LW", "TN"] },
-    { day: 18, count: "3/4", status: "warning" as const, lead: "KM", staff: ["AL"] },
-    { day: 19, count: "4/4", status: "ok" as const, lead: "AD", staff: ["IR", "LN", "TN"] },
-    { day: 20, count: "4/4", status: "ok" as const, lead: "BA", staff: ["LW", "AL"] },
-    { day: 21, count: "4/4", status: "ok" as const, lead: "BY", staff: ["IR", "TN"] },
-    { day: 22, count: "3/4", status: "ok" as const, lead: "KM", staff: ["LN", "LW"] },
-  ],
+const floatingCards = [
+  {
+    icon: CalendarDays,
+    title: "Schedule",
+    detail: "View & manage weekly shifts",
+    color: "bg-sidebar-accent",
+    position: "top-[20%] left-[10%]",
+    delay: 0.6,
+  },
+  {
+    icon: ArrowLeftRight,
+    title: "Swaps",
+    detail: "Request & approve trades",
+    color: "bg-sidebar-ring/20",
+    position: "top-[20%] right-[10%]",
+    delay: 0.8,
+  },
+  {
+    icon: Users,
+    title: "Team",
+    detail: "See who's on today",
+    color: "bg-sidebar-accent",
+    position: "bottom-[20%] left-[10%]",
+    delay: 1.0,
+  },
+  {
+    icon: Clock,
+    title: "Availability",
+    detail: "Set your preferred hours",
+    color: "bg-sidebar-ring/20",
+    position: "bottom-[20%] right-[10%]",
+    delay: 1.2,
+  },
 ];
 
 export default function AuthPage() {
