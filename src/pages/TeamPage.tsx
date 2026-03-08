@@ -74,7 +74,7 @@ export default function TeamPage() {
 
       <TherapistDetailDialog
         therapist={selected}
-        certifications={selected ? CERTIFICATIONS[selected.id] ?? [] : []}
+        certifications={[]}
         open={!!selected}
         onOpenChange={(open) => { if (!open) setSelected(null); }}
       />
