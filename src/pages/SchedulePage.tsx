@@ -165,6 +165,30 @@ export default function SchedulePage() {
         onOpenChange={(open) => !open && setEditingSlot(null)}
         onUpdate={handleUpdate}
       />
+
+      <AutoDraftDialog
+        open={autoDraftOpen}
+        onOpenChange={setAutoDraftOpen}
+        currentSlots={slots}
+        onApply={(newSlots) => {
+          undoStack.current.push({ slots, description: "Auto-draft schedule" });
+          setSlots(newSlots);
+          toast.success("Auto-draft applied", {
+            description: "Schedule generated respecting all preferences",
+            action: {
+              label: "Undo",
+              onClick: () => {
+                const entry = undoStack.current.pop();
+                if (entry) {
+                  setSlots(entry.slots);
+                  toast.success("Auto-draft undone");
+                }
+              },
+            },
+            duration: 8000,
+          });
+        }}
+      />
     </AppLayout>
   );
 }
