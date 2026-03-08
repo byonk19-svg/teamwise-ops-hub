@@ -83,10 +83,20 @@ export function getStaffAssignments(slot: ShiftSlot): Therapist[] {
     .filter((t): t is Therapist => !!t && t.role === "staff");
 }
 
+const INACTIVE_STATUSES: AssignmentStatus[] = ["cancelled", "call-in", "on-call"];
+
+/** Count only active assignments (excludes cancelled, call-in, on-call) */
+export function getActiveAssignmentCount(slot: ShiftSlot): number {
+  return slot.assignments.filter((a) => !a.status || !INACTIVE_STATUSES.includes(a.status)).length;
+}
+
 export function getCoverageStatus(slot: ShiftSlot): "ok" | "warning" | "error" {
-  const count = slot.assignments.length;
+  const count = getActiveAssignmentCount(slot);
   const hasLead = slot.needsLead
-    ? slot.assignments.some((a) => getTherapist(a.therapistId)?.role === "lead")
+    ? slot.assignments.some((a) => {
+        const t = getTherapist(a.therapistId);
+        return t?.role === "lead" && (!a.status || !INACTIVE_STATUSES.includes(a.status));
+      })
     : true;
 
   if (count === 0) return "error";

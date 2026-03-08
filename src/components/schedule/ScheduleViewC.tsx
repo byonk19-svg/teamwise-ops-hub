@@ -1,6 +1,6 @@
 import { useMemo, useRef, useCallback } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
-import { ShiftSlot, getCoverageStatus, getLeadAssignment, getInactiveLeads, getStaffAssignments, AssignmentStatus, ASSIGNMENT_STATUSES } from "@/lib/schedule-data";
+import { ShiftSlot, getCoverageStatus, getActiveAssignmentCount, getLeadAssignment, getInactiveLeads, getStaffAssignments, AssignmentStatus, ASSIGNMENT_STATUSES } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -169,7 +169,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                           "text-[10px] font-bold font-heading tabular-nums leading-none",
                           status === "ok" ? "text-success" : status === "warning" ? "text-warning-foreground" : "text-destructive"
                         )}>
-                          {slot.assignments.length}/{slot.minStaff}
+                          {getActiveAssignmentCount(slot)}/{slot.minStaff}
                         </span>
                       </div>
 
