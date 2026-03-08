@@ -36,7 +36,7 @@ const floatingCards = [
   {
     icon: Clock,
     title: "Availability",
-    detail: "Set your preferred hours",
+    detail: "Mark the days you can work",
     color: "bg-sidebar-ring/20",
     position: "bottom-[20%] right-[10%]",
     delay: 1.2,
