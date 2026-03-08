@@ -528,18 +528,11 @@ function ManagerSwapCard({
 function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
   const config = {
     open: { variant: "info" as const, icon: ArrowLeftRight, label: "Open" },
+    pending_peer: { variant: "neutral" as const, icon: Clock, label: "Awaiting Peer" },
     claimed: { variant: "warning" as const, icon: Clock, label: "Pending" },
-    approved: {
-      variant: "success" as const,
-      icon: CheckCircle2,
-      label: "Approved",
-    },
+    approved: { variant: "success" as const, icon: CheckCircle2, label: "Approved" },
     rejected: { variant: "error" as const, icon: XCircle, label: "Rejected" },
-    cancelled: {
-      variant: "neutral" as const,
-      icon: XCircle,
-      label: "Cancelled",
-    },
+    cancelled: { variant: "neutral" as const, icon: XCircle, label: "Cancelled" },
   }[status];
 
   return (
@@ -547,5 +540,20 @@ function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
       <config.icon className="h-3 w-3" />
       {config.label}
     </StatusBadge>
+  );
+}
+
+function ManagerSwapModeBadge({ mode }: { mode: SwapMode }) {
+  const config = {
+    open: { icon: ArrowLeftRight, label: "Open", className: "bg-muted text-muted-foreground" },
+    direct: { icon: UserCheck, label: "Direct", className: "bg-primary/10 text-primary" },
+    trade: { icon: Repeat2, label: "Trade", className: "bg-accent/10 text-accent-foreground" },
+  }[mode];
+
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium", config.className)}>
+      <config.icon className="h-2.5 w-2.5" />
+      {config.label}
+    </span>
   );
 }
