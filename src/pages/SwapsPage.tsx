@@ -29,6 +29,7 @@ const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
 
 interface CoverageImpact {
+  label: string; // e.g. "Wed, Mar 25 · Day"
   currentStaff: number;
   afterStaff: number;
   minStaff: number;
@@ -40,37 +41,49 @@ interface CoverageImpact {
   claimerIsLead: boolean;
 }
 
-function computeImpact(
+interface SwapImpact {
+  primary: CoverageImpact | null;    // The requester's shift
+  tradeReturn: CoverageImpact | null; // The trade-back shift (only for mutual trades)
+  overallSeverity: "ok" | "warning" | "error";
+}
+
+function computeSingleImpact(
   slots: ShiftSlot[],
-  swap: ShiftSwap
+  shiftDate: string,
+  shiftType: "day" | "night",
+  removedId: string,
+  addedId?: string,
+  label?: string
 ): CoverageImpact | null {
-  const slotId = `${swap.shiftDate}-${swap.shiftType}`;
+  const slotId = `${shiftDate}-${shiftType}`;
   const slot = slots.find((s) => s.id === slotId);
   if (!slot) return null;
 
-  const requester = getTherapist(swap.requesterId);
-  const claimer = swap.claimedById ? getTherapist(swap.claimedById) : null;
+  const removed = getTherapist(removedId);
+  const added = addedId ? getTherapist(addedId) : null;
 
   const currentStaff = slot.assignments.length;
   const hasLeadBefore = slot.assignments.some(
     (a) => getTherapist(a.therapistId)?.role === "lead"
   );
 
-  // After swap: remove requester, add claimer
   const afterAssignments = slot.assignments
-    .filter((a) => a.therapistId !== swap.requesterId)
-    .concat(claimer ? [{ therapistId: swap.claimedById! }] : []);
+    .filter((a) => a.therapistId !== removedId)
+    .concat(added ? [{ therapistId: addedId! }] : []);
 
   const afterStaff = afterAssignments.length;
   const hasLeadAfter = afterAssignments.some(
     (a) => getTherapist(a.therapistId)?.role === "lead"
   );
 
-  const claimerAlreadyScheduled = claimer
-    ? slot.assignments.some((a) => a.therapistId === swap.claimedById)
+  const claimerAlreadyScheduled = added
+    ? slot.assignments.some((a) => a.therapistId === addedId)
     : false;
 
+  const shiftDateParsed = parseISO(shiftDate);
+
   return {
+    label: label || `${format(shiftDateParsed, "EEE, MMM d")} · ${shiftType === "day" ? "Day" : "Night"}`,
     currentStaff,
     afterStaff,
     minStaff: slot.minStaff,
@@ -78,9 +91,55 @@ function computeImpact(
     hasLeadAfter,
     needsLead: slot.needsLead,
     claimerAlreadyScheduled,
-    requesterIsLead: requester?.role === "lead" || false,
-    claimerIsLead: claimer?.role === "lead" || false,
+    requesterIsLead: removed?.role === "lead" || false,
+    claimerIsLead: added?.role === "lead" || false,
   };
+}
+
+function computeSwapImpact(
+  slots: ShiftSlot[],
+  swap: ShiftSwap
+): SwapImpact {
+  // Primary shift: requester leaves, claimer joins
+  const primary = computeSingleImpact(
+    slots,
+    swap.shiftDate,
+    swap.shiftType,
+    swap.requesterId,
+    swap.claimedById
+  );
+
+  // Trade-return shift (mutual trade only): claimer leaves, requester joins
+  let tradeReturn: CoverageImpact | null = null;
+  if (swap.mode === "trade" && swap.tradeShiftDate && swap.tradeShiftType && swap.claimedById) {
+    tradeReturn = computeSingleImpact(
+      slots,
+      swap.tradeShiftDate,
+      swap.tradeShiftType,
+      swap.claimedById,
+      swap.requesterId
+    );
+  }
+
+  const severities = [primary, tradeReturn]
+    .filter(Boolean)
+    .map((impact) => getImpactSeverity(impact!));
+
+  const overallSeverity = severities.includes("error")
+    ? "error"
+    : severities.includes("warning")
+    ? "warning"
+    : "ok";
+
+  return { primary, tradeReturn, overallSeverity };
+}
+
+function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
+  if (impact.afterStaff < impact.minStaff) return "error";
+  if (impact.needsLead && impact.hasLeadBefore && !impact.hasLeadAfter) return "error";
+  if (impact.claimerAlreadyScheduled) return "warning";
+  if (impact.requesterIsLead && !impact.claimerIsLead && impact.needsLead && !impact.hasLeadAfter) return "warning";
+  return "ok";
 }
 
 export default function ManagerSwapsPage() {
@@ -194,7 +253,7 @@ export default function ManagerSwapsPage() {
                     key={swap.id}
                     swap={swap}
                     index={i}
-                    impact={computeImpact(schedule, swap)}
+                    impact={computeSwapImpact(schedule, swap)}
                     onApprove={() => handleApprove(swap.id)}
                     onReject={() => handleReject(swap.id)}
                     highlight
@@ -218,7 +277,7 @@ export default function ManagerSwapsPage() {
               </div>
               <div className="space-y-2">
                 {pendingPeer.map((swap, i) => (
-                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeImpact(schedule, swap)} />
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeSwapImpact(schedule, swap)} />
                 ))}
               </div>
             </section>
@@ -242,7 +301,7 @@ export default function ManagerSwapsPage() {
                     key={swap.id}
                     swap={swap}
                     index={i}
-                    impact={computeImpact(schedule, swap)}
+                    impact={computeSwapImpact(schedule, swap)}
                   />
                 ))}
               </div>
@@ -271,110 +330,98 @@ export default function ManagerSwapsPage() {
   );
 }
 
-function CoverageImpactBadge({ impact }: { impact: CoverageImpact }) {
-  const warnings: string[] = [];
-  let severity: "ok" | "warning" | "error" = "ok";
-
-  if (impact.afterStaff < impact.minStaff) {
-    warnings.push(`Drops to ${impact.afterStaff}/${impact.minStaff} staff`);
-    severity = "error";
-  }
-
-  if (impact.needsLead && impact.hasLeadBefore && !impact.hasLeadAfter) {
-    warnings.push("Loses lead coverage");
-    severity = "error";
-  }
-
-  if (impact.claimerAlreadyScheduled) {
-    warnings.push("Claimer already on this shift");
-    severity = severity === "ok" ? "warning" : severity;
-  }
-
-  if (impact.requesterIsLead && !impact.claimerIsLead && impact.needsLead) {
-    if (impact.hasLeadAfter) {
-      // Another lead exists, just note the role change
-    } else {
-      warnings.push("Lead replaced by staff");
-      severity = severity === "ok" ? "warning" : severity;
-    }
-  }
-
-  const isOk = severity === "ok";
-  const afterOk = impact.afterStaff >= impact.minStaff;
+function SwapCoveragePanel({ impact }: { impact: SwapImpact }) {
+  const hasTrade = impact.tradeReturn !== null;
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border px-3 py-2 mt-2",
-        severity === "ok" && "bg-success/5 border-success/20",
-        severity === "warning" && "bg-warning/5 border-warning/20",
-        severity === "error" && "bg-destructive/5 border-destructive/20"
-      )}
-    >
-      <div className="flex items-center gap-2 mb-1">
-        {severity === "ok" ? (
-          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
-        ) : severity === "warning" ? (
-          <AlertTriangle className="h-3 w-3 text-warning flex-shrink-0" />
+    <div className={cn(
+      "rounded-lg border px-3 py-2.5 mt-2",
+      impact.overallSeverity === "ok" && "bg-success/5 border-success/20",
+      impact.overallSeverity === "warning" && "bg-warning/5 border-warning/20",
+      impact.overallSeverity === "error" && "bg-destructive/5 border-destructive/20"
+    )}>
+      {/* Overall header */}
+      <div className="flex items-center gap-2 mb-2">
+        {impact.overallSeverity === "ok" ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-success flex-shrink-0" />
+        ) : impact.overallSeverity === "warning" ? (
+          <AlertTriangle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
         ) : (
-          <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />
+          <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
         )}
-        <span
-          className={cn(
-            "text-[11px] font-semibold",
-            severity === "ok" && "text-success",
-            severity === "warning" && "text-warning-foreground",
-            severity === "error" && "text-destructive"
-          )}
-        >
-          {isOk ? "No coverage impact" : warnings.length === 1 ? warnings[0] : `${warnings.length} concerns`}
+        <span className={cn(
+          "text-[11px] font-semibold",
+          impact.overallSeverity === "ok" && "text-success",
+          impact.overallSeverity === "warning" && "text-warning-foreground",
+          impact.overallSeverity === "error" && "text-destructive"
+        )}>
+          {impact.overallSeverity === "ok"
+            ? hasTrade ? "Both shifts fully covered" : "No coverage impact"
+            : hasTrade ? "Coverage concern on one or more shifts" : "Coverage concern"}
         </span>
       </div>
 
-      <div className="flex items-center gap-3 text-[10px]">
-        {/* Staff count */}
-        <div className="flex items-center gap-1">
-          <Users className="h-3 w-3 text-muted-foreground" />
-          <span className="text-muted-foreground">Staff:</span>
-          <span className="font-semibold tabular-nums">{impact.currentStaff}</span>
-          <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
-          <span
-            className={cn(
-              "font-semibold tabular-nums",
-              afterOk ? "text-success" : "text-destructive"
-            )}
-          >
-            {impact.afterStaff}
-          </span>
-          <span className="text-muted-foreground">/ {impact.minStaff} min</span>
-        </div>
+      {/* Shift rows */}
+      <div className={cn("space-y-1.5", hasTrade && "")}>
+        {impact.primary && (
+          <ShiftCoverageRow
+            impact={impact.primary}
+            direction={hasTrade ? "gives up" : undefined}
+          />
+        )}
+        {impact.tradeReturn && (
+          <ShiftCoverageRow
+            impact={impact.tradeReturn}
+            direction="takes over"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
-        {/* Lead status */}
-        {impact.needsLead && (
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3 text-muted-foreground" />
-            <span className="text-muted-foreground">Lead:</span>
-            <span
-              className={cn(
-                "font-semibold",
-                impact.hasLeadAfter ? "text-success" : "text-destructive"
-              )}
-            >
-              {impact.hasLeadAfter ? "Covered" : "Missing"}
-            </span>
-          </div>
+function ShiftCoverageRow({ impact, direction }: { impact: CoverageImpact; direction?: string }) {
+  const severity = getImpactSeverity(impact);
+  const afterOk = impact.afterStaff >= impact.minStaff;
+  const leadOk = !impact.needsLead || impact.hasLeadAfter;
+
+  return (
+    <div className={cn(
+      "flex items-center gap-2 rounded-md px-2 py-1.5 text-[10px]",
+      severity === "ok" ? "bg-success/5" : severity === "warning" ? "bg-warning/5" : "bg-destructive/5"
+    )}>
+      {/* Shift label */}
+      <div className="flex items-center gap-1.5 min-w-0">
+        {severity === "ok" ? (
+          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
+        ) : (
+          <AlertTriangle className={cn("h-3 w-3 flex-shrink-0", severity === "warning" ? "text-warning" : "text-destructive")} />
+        )}
+        <span className="font-medium text-foreground whitespace-nowrap">{impact.label}</span>
+        {direction && (
+          <span className="text-muted-foreground italic">({direction})</span>
         )}
       </div>
 
-      {warnings.length > 1 && (
-        <ul className="mt-1.5 space-y-0.5">
-          {warnings.map((w, i) => (
-            <li key={i} className="text-[10px] text-destructive/80 flex items-center gap-1">
-              <span className="h-1 w-1 rounded-full bg-destructive/50" />
-              {w}
-            </li>
-          ))}
-        </ul>
+      {/* Staff count */}
+      <div className="flex items-center gap-1 ml-auto">
+        <Users className="h-3 w-3 text-muted-foreground" />
+        <span className="tabular-nums font-semibold">{impact.currentStaff}</span>
+        <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
+        <span className={cn("tabular-nums font-semibold", afterOk ? "text-success" : "text-destructive")}>
+          {impact.afterStaff}
+        </span>
+        <span className="text-muted-foreground">/ {impact.minStaff}</span>
+      </div>
+
+      {/* Lead */}
+      {impact.needsLead && (
+        <div className="flex items-center gap-1">
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className={cn("font-semibold", leadOk ? "text-success" : "text-destructive")}>
+            {leadOk ? "✓" : "✗"}
+          </span>
+        </div>
       )}
     </div>
   );
@@ -391,7 +438,7 @@ function ManagerSwapCard({
   swap: ShiftSwap;
   index: number;
   highlight?: boolean;
-  impact?: CoverageImpact | null;
+  impact?: SwapImpact | null;
   onApprove?: () => void;
   onReject?: () => void;
 }) {
@@ -491,8 +538,8 @@ function ManagerSwapCard({
           )}
 
           {/* Coverage Impact */}
-          {impact && swap.status === "claimed" && (
-            <CoverageImpactBadge impact={impact} />
+          {impact && (swap.status === "claimed" || swap.status === "pending_peer") && (
+            <SwapCoveragePanel impact={impact} />
           )}
         </div>
 
