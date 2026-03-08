@@ -179,6 +179,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                         const leadAssignment = slot.assignments.find(a => a.therapistId === lead.id);
                         const leadStatus: AssignmentStatus = leadAssignment?.status ?? "active";
                         const isActiveOrMinor = leadStatus === "active" || leadStatus === "leave-early";
+                        const leadUnavail = isOnUnavailableDay(lead.id, slot.date);
                         return (
                           <div className={cn(
                             "rounded-md px-2 py-1 mb-1 border",
@@ -188,11 +189,23 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                             <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
                             <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead assignedIds={slot.assignments.map(a => a.therapistId)}>
                               <span className="inline-flex flex-col mt-0.5 gap-0.5">
-                                <span className={cn(
-                                  "text-[11px] font-semibold leading-none",
-                                  isActiveOrMinor ? "text-primary" : "text-destructive/70 line-through decoration-destructive/40"
-                                )}>
-                                  {lead.name}
+                                <span className="inline-flex items-center gap-1">
+                                  <span className={cn(
+                                    "text-[11px] font-semibold leading-none",
+                                    isActiveOrMinor ? "text-primary" : "text-destructive/70 line-through decoration-destructive/40"
+                                  )}>
+                                    {lead.name}
+                                  </span>
+                                  {leadUnavail && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                        <AlertTriangle className="h-2.5 w-2.5 text-warning-foreground shrink-0" />
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="text-xs">
+                                        {lead.name} prefers not to work this day
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
                                 </span>
                                 <StatusPill status={leadStatus} />
                               </span>
