@@ -438,7 +438,7 @@ function ManagerSwapCard({
   swap: ShiftSwap;
   index: number;
   highlight?: boolean;
-  impact?: CoverageImpact | null;
+  impact?: SwapImpact | null;
   onApprove?: () => void;
   onReject?: () => void;
 }) {
