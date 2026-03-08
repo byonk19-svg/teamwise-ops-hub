@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { format, addDays, addWeeks } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
 import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
@@ -6,17 +6,24 @@ import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { Send, Printer, Sparkles, AlertTriangle } from "lucide-react";
+import { Send, Printer, Sparkles, AlertTriangle, Undo2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
+
+interface HistoryEntry {
+  slots: ShiftSlot[];
+  description: string;
+}
 
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
+  const undoStack = useRef<HistoryEntry[]>([]);
 
   const issueCount = useMemo(() => {
     return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
@@ -24,10 +31,40 @@ export default function SchedulePage() {
 
   const cycleEnd = addDays(addWeeks(CYCLE_START, TOTAL_WEEKS), -1);
 
-  function handleUpdate(slotId: string, assignments: { therapistId: string }[]) {
+  const handleUpdate = useCallback((slotId: string, assignments: { therapistId: string }[]) => {
+    // Save current state for undo
+    const prevSlots = slots;
+    const targetSlot = slots.find((s) => s.id === slotId);
+    const description = targetSlot
+      ? `Changed ${format(new Date(targetSlot.date), "MMM d")} ${targetSlot.type} shift`
+      : "Changed assignment";
+
+    undoStack.current.push({ slots: prevSlots, description });
+
     setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, assignments } : s)));
     setEditingSlot((prev) => (prev?.id === slotId ? { ...prev, assignments } : prev));
-  }
+
+    toast("Assignment updated", {
+      description,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          const entry = undoStack.current.pop();
+          if (entry) {
+            setSlots(entry.slots);
+            // Update editing slot if still open
+            setEditingSlot((prev) => {
+              if (!prev) return null;
+              const restored = entry.slots.find((s) => s.id === prev.id);
+              return restored ?? prev;
+            });
+            toast.success("Change undone");
+          }
+        },
+      },
+      duration: 5000,
+    });
+  }, [slots]);
 
   return (
     <AppLayout>
@@ -110,6 +147,7 @@ export default function SchedulePage() {
 
       <EditShiftDialog
         slot={editingSlot}
+        allSlots={slots}
         open={!!editingSlot}
         onOpenChange={(open) => !open && setEditingSlot(null)}
         onUpdate={handleUpdate}
