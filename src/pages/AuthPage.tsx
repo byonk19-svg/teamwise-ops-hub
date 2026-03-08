@@ -7,12 +7,9 @@ import { Label } from "@/components/ui/label";
 import {
   CalendarDays,
   Loader2,
-  Shield,
   ArrowRight,
-  HelpCircle,
   Users,
   ArrowLeftRight,
-  Clock,
   BarChart3,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -310,24 +307,6 @@ export default function AuthPage() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-6">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider font-medium">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
-            {/* SSO placeholder */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 rounded-lg text-sm font-medium border-border hover:bg-muted/50 transition-all"
-              disabled
-            >
-              <Shield className="h-4 w-4 mr-2 text-muted-foreground" />
-              Sign in with SSO
-              <span className="ml-auto text-[10px] text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-            </Button>
 
             {/* Toggle */}
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -343,22 +322,6 @@ export default function AuthPage() {
           </motion.div>
         </div>
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="px-8 py-5 flex items-center justify-between border-t border-border/60"
-        >
-          <div className="flex items-center gap-1.5 text-muted-foreground/50">
-            <Shield className="h-3 w-3" />
-            <span className="text-[11px]">HIPAA-friendly</span>
-          </div>
-          <button className="flex items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-            <HelpCircle className="h-3 w-3" />
-            <span className="text-[11px]">Need help?</span>
-          </button>
-        </motion.div>
       </div>
     </div>
   );
