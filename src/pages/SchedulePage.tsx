@@ -26,6 +26,7 @@ export default function SchedulePage() {
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
   const [issuesOnly, setIssuesOnly] = useState(false);
   const undoStack = useRef<HistoryEntry[]>([]);
+  const [autoDraftOpen, setAutoDraftOpen] = useState(false);
 
   const issueCount = useMemo(() => {
     return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
