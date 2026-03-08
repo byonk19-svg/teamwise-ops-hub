@@ -92,7 +92,7 @@ export function AppSidebar() {
 
         {/* Role switcher (demo) */}
         <NavLink
-          to={isTherapist ? "/" : "/therapist"}
+          to={isTherapist ? "/dashboard" : "/therapist"}
           className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[11px] font-medium text-sidebar-muted hover:text-sidebar-foreground transition-colors"
         >
           <ArrowLeftRight className="h-3.5 w-3.5" />
