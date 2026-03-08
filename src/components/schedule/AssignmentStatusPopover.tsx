@@ -149,7 +149,7 @@ export function AssignmentStatusPopover({
           })}
 
           {/* Reset option when not active */}
-          {effectiveStatus !== "active" && !needsReplacement && (
+          {effectiveStatus !== "active" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
