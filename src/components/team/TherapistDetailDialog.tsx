@@ -56,7 +56,19 @@ export function TherapistDetailDialog({ therapist, certifications, open, onOpenC
     const next = currentPrefs.preferredDays.includes(day)
       ? currentPrefs.preferredDays.filter((d) => d !== day)
       : [...currentPrefs.preferredDays, day].sort();
-    setLocalPrefs({ ...currentPrefs, preferredDays: next });
+    // Remove from unavailable if adding to preferred
+    const nextUnavail = currentPrefs.unavailableDays.filter((d) => d !== day);
+    setLocalPrefs({ ...currentPrefs, preferredDays: next, unavailableDays: nextUnavail });
+  };
+
+  const toggleUnavailableDay = (day: number) => {
+    if (!currentPrefs) return;
+    const next = currentPrefs.unavailableDays.includes(day)
+      ? currentPrefs.unavailableDays.filter((d) => d !== day)
+      : [...currentPrefs.unavailableDays, day].sort();
+    // Remove from preferred if adding to unavailable
+    const nextPref = currentPrefs.preferredDays.filter((d) => d !== day);
+    setLocalPrefs({ ...currentPrefs, unavailableDays: next, preferredDays: nextPref });
   };
 
   if (!therapist || !currentPrefs) return null;
@@ -117,6 +129,27 @@ export function TherapistDetailDialog({ therapist, certifications, open, onOpenC
                       currentPrefs.preferredDays.includes(i)
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Unavailable days */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Prefer Not to Work</p>
+              <div className="flex gap-1.5">
+                {DAY_LABELS.map((label, i) => (
+                  <button
+                    key={i}
+                    onClick={() => toggleUnavailableDay(i)}
+                    className={cn(
+                      "h-8 w-9 rounded-md text-xs font-medium transition-colors border",
+                      currentPrefs.unavailableDays.includes(i)
+                        ? "bg-destructive text-destructive-foreground border-destructive"
+                        : "bg-card text-muted-foreground border-border hover:border-destructive/30"
                     )}
                   >
                     {label}
