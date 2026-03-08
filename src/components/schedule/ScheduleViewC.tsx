@@ -17,6 +17,7 @@ interface ViewCProps {
 }
 
 export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issuesOnly = false, onClickSlot }: ViewCProps) {
+  const { swappedSlotIds } = useSchedule();
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
   const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const focusedIndex = useRef<number>(0);
