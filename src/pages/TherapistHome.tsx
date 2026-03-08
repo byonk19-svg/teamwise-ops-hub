@@ -145,9 +145,9 @@ export default function TherapistHome() {
                     <p className="text-xs text-muted-foreground mb-2.5">
                       Posted by {swap.from} · {swap.reason}
                     </p>
-                    <Button variant="outline" size="sm" className="text-xs h-7">
-                      Pick Up Shift
-                    </Button>
+                     <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => navigate("/therapist/swaps")}>
+                       Pick Up Shift
+                     </Button>
                   </div>
                 ))}
               </div>
