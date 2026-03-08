@@ -35,6 +35,7 @@ const openSwaps = [
 ];
 
 export default function TherapistHome() {
+  const navigate = useNavigate();
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-5xl">
