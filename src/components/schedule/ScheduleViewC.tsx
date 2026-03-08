@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useCallback, useEffect } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,8 @@ interface ViewCProps {
 
 export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClickSlot }: ViewCProps) {
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
+  const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const focusedIndex = useRef<number>(0);
 
   const weeks = useMemo(() => {
     const result: ShiftSlot[][] = [];
@@ -24,12 +26,51 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
     return result;
   }, [filtered, totalWeeks]);
 
+  const flatSlots = useMemo(() => weeks.flat(), [weeks]);
+
+  const focusCell = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, flatSlots.length - 1));
+    const slot = flatSlots[clamped];
+    if (slot) {
+      const el = cellRefs.current.get(slot.id);
+      el?.focus();
+      focusedIndex.current = clamped;
+    }
+  }, [flatSlots]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, index: number) => {
+    let next = index;
+    switch (e.key) {
+      case "ArrowRight":
+        next = index + 1;
+        break;
+      case "ArrowLeft":
+        next = index - 1;
+        break;
+      case "ArrowDown":
+        next = index + 7;
+        break;
+      case "ArrowUp":
+        next = index - 7;
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        onClickSlot(flatSlots[index]);
+        return;
+      default:
+        return;
+    }
+    e.preventDefault();
+    focusCell(next);
+  }, [flatSlots, focusCell, onClickSlot]);
+
   return (
-    <div>
+    <div role="grid" aria-label={`${shiftView} shift schedule`}>
       {/* Day headers - sticky */}
-      <div className="grid grid-cols-7 gap-2 mb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2.5 -mx-1 px-1">
+      <div role="row" className="grid grid-cols-7 gap-2 mb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2.5 -mx-1 px-1">
         {DAYS.map((day) => (
-          <div key={day} className="text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div key={day} role="columnheader" className="text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             {day}
           </div>
         ))}
@@ -37,90 +78,102 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
 
       {/* Week rows */}
       <div className="space-y-4">
-        {weeks.map((week, wi) => (
-          <div key={wi}>
-            <div className="flex items-center gap-2 mb-2 pl-0.5">
-              <p className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">
-                Week {wi + 1}
-              </p>
-              <div className="flex-1 h-px bg-border/60" />
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {week.map((slot) => {
-                const status = getCoverageStatus(slot);
-                const lead = getLeadAssignment(slot);
-                const staff = getStaffAssignments(slot);
-                const date = parseISO(slot.date);
-                const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
-                const today = isToday(date);
-                const weekend = isWeekend(date);
+        {weeks.map((week, wi) => {
+          const weekStartIndex = wi * 7;
+          return (
+            <div key={wi}>
+              <div className="flex items-center gap-2 mb-2 pl-0.5">
+                <p className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">
+                  Week {wi + 1}
+                </p>
+                <div className="flex-1 h-px bg-border/60" />
+              </div>
+              <div role="row" className="grid grid-cols-7 gap-2">
+                {week.map((slot, di) => {
+                  const cellIndex = weekStartIndex + di;
+                  const status = getCoverageStatus(slot);
+                  const lead = getLeadAssignment(slot);
+                  const staff = getStaffAssignments(slot);
+                  const date = parseISO(slot.date);
+                  const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
+                  const today = isToday(date);
+                  const weekend = isWeekend(date);
 
-                return (
-                  <button
-                    key={slot.id}
-                    onClick={() => onClickSlot(slot)}
-                    className={cn(
-                      "group rounded-lg border p-2.5 text-left transition-all duration-150",
-                      "hover:shadow-md hover:-translate-y-px hover:border-primary/25",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                      status === "ok" && "bg-card border-border",
-                      status === "ok" && weekend && "bg-muted/40 border-border/70",
-                      status === "warning" && "bg-warning/5 border-warning/25",
-                      status === "error" && "bg-destructive/4 border-destructive/25",
-                      today && "ring-2 ring-primary/30 shadow-sm"
-                    )}
-                  >
-                    {/* Date header */}
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-baseline gap-1">
+                  return (
+                    <button
+                      key={slot.id}
+                      ref={(el) => {
+                        if (el) cellRefs.current.set(slot.id, el);
+                        else cellRefs.current.delete(slot.id);
+                      }}
+                      role="gridcell"
+                      tabIndex={cellIndex === 0 ? 0 : -1}
+                      onClick={() => onClickSlot(slot)}
+                      onKeyDown={(e) => handleKeyDown(e, cellIndex)}
+                      aria-label={`${format(date, "EEEE, MMMM d")} — ${slot.assignments.length} of ${slot.minStaff} staff assigned`}
+                      className={cn(
+                        "group rounded-lg border p-2.5 text-left transition-all duration-150",
+                        "hover:shadow-md hover:-translate-y-px hover:border-primary/25",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                        status === "ok" && "bg-card border-border",
+                        status === "ok" && weekend && "bg-muted/40 border-border/70",
+                        status === "warning" && "bg-warning/5 border-warning/25",
+                        status === "error" && "bg-destructive/4 border-destructive/25",
+                        today && "ring-2 ring-primary/30 shadow-sm"
+                      )}
+                    >
+                      {/* Date header */}
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-baseline gap-1">
+                          <span className={cn(
+                            "font-heading font-bold text-sm leading-none",
+                            today && "text-primary"
+                          )}>
+                            {format(date, "d")}
+                          </span>
+                          {monthLabel && (
+                            <span className="text-[9px] font-medium text-muted-foreground">{monthLabel}</span>
+                          )}
+                        </div>
                         <span className={cn(
-                          "font-heading font-bold text-sm leading-none",
-                          today && "text-primary"
+                          "text-[10px] font-bold font-heading tabular-nums leading-none",
+                          status === "ok" ? "text-success" : status === "warning" ? "text-warning-foreground" : "text-destructive"
                         )}>
-                          {format(date, "d")}
+                          {slot.assignments.length}/{slot.minStaff}
                         </span>
-                        {monthLabel && (
-                          <span className="text-[9px] font-medium text-muted-foreground">{monthLabel}</span>
-                        )}
                       </div>
-                      <span className={cn(
-                        "text-[10px] font-bold font-heading tabular-nums leading-none",
-                        status === "ok" ? "text-success" : status === "warning" ? "text-warning-foreground" : "text-destructive"
-                      )}>
-                        {slot.assignments.length}/{slot.minStaff}
-                      </span>
-                    </div>
 
-                    {/* Lead */}
-                    {lead ? (
-                      <div className="rounded-md bg-primary/8 px-2 py-1 mb-1.5 border border-primary/10">
-                        <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
-                        <p className="text-[11px] font-semibold text-primary mt-0.5">{lead.name}</p>
-                      </div>
-                    ) : slot.assignments.length > 0 ? (
-                      <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1.5 border border-destructive/10">
-                        <p className="text-[9px] font-medium text-destructive">No lead</p>
-                      </div>
-                    ) : null}
+                      {/* Lead */}
+                      {lead ? (
+                        <div className="rounded-md bg-primary/8 px-2 py-1 mb-1.5 border border-primary/10">
+                          <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
+                          <p className="text-[11px] font-semibold text-primary mt-0.5">{lead.name}</p>
+                        </div>
+                      ) : slot.assignments.length > 0 ? (
+                        <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1.5 border border-destructive/10">
+                          <p className="text-[9px] font-medium text-destructive">No lead</p>
+                        </div>
+                      ) : null}
 
-                    {/* Staff */}
-                    {staff.length > 0 && (
-                      <div className="space-y-0">
-                        {staff.map((t) => (
-                          <p key={t.id} className="text-[10px] text-foreground/60 leading-relaxed">{t.name}</p>
-                        ))}
-                      </div>
-                    )}
+                      {/* Staff */}
+                      {staff.length > 0 && (
+                        <div className="space-y-0">
+                          {staff.map((t) => (
+                            <p key={t.id} className="text-[10px] text-foreground/60 leading-relaxed">{t.name}</p>
+                          ))}
+                        </div>
+                      )}
 
-                    {slot.assignments.length === 0 && (
-                      <p className="text-[9px] text-destructive/30 mt-2 text-center italic">Unassigned</p>
-                    )}
-                  </button>
-                );
-              })}
+                      {slot.assignments.length === 0 && (
+                        <p className="text-[9px] text-destructive/30 mt-2 text-center italic">Unassigned</p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
