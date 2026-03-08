@@ -5,7 +5,7 @@ import { useSchedule } from "@/context/ScheduleContext";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { AssignmentStatusPopover } from "./AssignmentStatusPopover";
+import { AssignmentStatusPopover, StatusPill } from "./AssignmentStatusPopover";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
