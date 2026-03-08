@@ -1,6 +1,8 @@
 import { useMemo, useRef, useCallback, useEffect } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
+import { useSchedule } from "@/context/ScheduleContext";
+import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -15,6 +17,7 @@ interface ViewCProps {
 }
 
 export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issuesOnly = false, onClickSlot }: ViewCProps) {
+  const { swappedSlotIds } = useSchedule();
   const filtered = useMemo(() => slots.filter((s) => s.type === shiftView), [slots, shiftView]);
   const cellRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const focusedIndex = useRef<number>(0);
@@ -100,6 +103,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                   const today = isToday(date);
                   const weekend = isWeekend(date);
                   const dimmed = issuesOnly && status === "ok";
+                  const swapped = swappedSlotIds.has(slot.id);
 
                   return (
                     <button
@@ -112,19 +116,26 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                       tabIndex={cellIndex === 0 ? 0 : -1}
                       onClick={() => onClickSlot(slot)}
                       onKeyDown={(e) => handleKeyDown(e, cellIndex)}
-                      aria-label={`${format(date, "EEEE, MMMM d")} — ${slot.assignments.length} of ${slot.minStaff} staff assigned`}
+                      aria-label={`${format(date, "EEEE, MMMM d")} — ${slot.assignments.length} of ${slot.minStaff} staff assigned${swapped ? " (modified by swap)" : ""}`}
                       className={cn(
-                        "group rounded-lg border p-2.5 text-left transition-all duration-150",
+                        "group relative rounded-lg border p-2.5 text-left transition-all duration-150",
                         "hover:shadow-md hover:-translate-y-px hover:border-primary/25",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                        status === "ok" && "bg-card border-border",
-                        status === "ok" && weekend && "bg-muted/40 border-border/70",
+                        status === "ok" && !swapped && "bg-card border-border",
+                        status === "ok" && !swapped && weekend && "bg-muted/40 border-border/70",
+                        status === "ok" && swapped && "bg-accent/8 border-accent/30",
                         status === "warning" && "bg-warning/5 border-warning/25",
                         status === "error" && "bg-destructive/4 border-destructive/25",
                         today && "ring-2 ring-primary/30 shadow-sm",
                         dimmed && "opacity-25 hover:opacity-60"
                       )}
                     >
+                      {/* Swap indicator */}
+                      {swapped && (
+                        <div className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 rounded-full bg-accent/15 border border-accent/25" title="Modified by swap">
+                          <ArrowLeftRight className="h-2.5 w-2.5 text-accent-foreground" />
+                        </div>
+                      )}
                       {/* Date header */}
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-baseline gap-1">
