@@ -173,25 +173,23 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                         </span>
                       </div>
 
-                      {/* Lead */}
+                      {/* Active Lead */}
                       {lead ? (() => {
                         const leadAssignment = slot.assignments.find(a => a.therapistId === lead.id);
                         const leadStatus: AssignmentStatus = leadAssignment?.status ?? "active";
+                        const isActiveOrMinor = leadStatus === "active" || leadStatus === "leave-early";
                         return (
                           <div className={cn(
-                            "rounded-md px-2 py-1 mb-1.5 border",
-                            leadStatus === "active" ? "bg-primary/8 border-primary/10" :
-                            leadStatus === "cancelled" || leadStatus === "call-in" ? "bg-destructive/6 border-destructive/10" :
-                            "bg-warning/6 border-warning/10"
+                            "rounded-md px-2 py-1 mb-1 border",
+                            isActiveOrMinor ? "bg-primary/8 border-primary/10" :
+                            "bg-destructive/6 border-destructive/10"
                           )}>
                             <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
                             <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead assignedIds={slot.assignments.map(a => a.therapistId)}>
                               <span className="inline-flex flex-col mt-0.5 gap-0.5">
                                 <span className={cn(
                                   "text-[11px] font-semibold leading-none",
-                                  leadStatus === "active" ? "text-primary" :
-                                  leadStatus === "cancelled" || leadStatus === "call-in" ? "text-destructive/70 line-through decoration-destructive/40" :
-                                  "text-warning-foreground"
+                                  isActiveOrMinor ? "text-primary" : "text-destructive/70 line-through decoration-destructive/40"
                                 )}>
                                   {lead.name}
                                 </span>
@@ -201,10 +199,22 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                           </div>
                         );
                       })() : slot.assignments.length > 0 ? (
-                        <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1.5 border border-destructive/10">
+                        <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1 border border-destructive/10">
                           <p className="text-[9px] font-medium text-destructive">No lead</p>
                         </div>
                       ) : null}
+
+                      {/* Inactive leads (cancelled/call-in/on-call) shown below */}
+                      {inactiveLeads.filter(il => il.therapist.id !== lead?.id).map(({ therapist: il, status: ilStatus }) => (
+                        <AssignmentStatusPopover key={il.id} slotId={slot.id} therapistId={il.id} therapistName={il.name} currentStatus={ilStatus} isLead assignedIds={slot.assignments.map(a => a.therapistId)}>
+                          <span className="inline-flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[9px] text-destructive/50 line-through decoration-destructive/30 leading-none">
+                              {il.name}
+                            </span>
+                            <StatusPill status={ilStatus} />
+                          </span>
+                        </AssignmentStatusPopover>
+                      ))}
 
                       {/* Staff */}
                       {staff.length > 0 && (
