@@ -231,21 +231,6 @@ export default function AuthPage() {
             </div>
           </motion.div>
 
-          {/* Team presence */}
-          <motion.div {...fade(0.55)} className="flex items-center gap-3 mt-6 shrink-0">
-            <div className="flex -space-x-1.5">
-              {["BY", "KM", "BA", "AD", "IR"].map((initials, i) => (
-                <div
-                  key={initials}
-                  className="h-6 w-6 rounded-full bg-sidebar-accent border-[1.5px] border-sidebar-background flex items-center justify-center"
-                  style={{ zIndex: 5 - i }}
-                >
-                  <span className="text-[8px] font-bold text-sidebar-accent-foreground">{initials}</span>
-                </div>
-              ))}
-            </div>
-            <span className="text-[11px] text-sidebar-primary/30 font-medium">Your team is already here</span>
-          </motion.div>
         </div>
       </div>
 
