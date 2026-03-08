@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { getTherapist, ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { ShiftSwap, generateSwaps, getSwapStats } from "@/lib/swap-data";
+import { ShiftSwap, SwapMode, generateSwaps, getSwapStats, getSwapModeLabel } from "@/lib/swap-data";
 import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
@@ -20,6 +20,8 @@ import {
   Shield,
   ArrowRight,
   Users,
+  UserCheck,
+  Repeat2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -91,6 +93,10 @@ export default function ManagerSwapsPage() {
     () => swaps.filter((s) => s.status === "claimed"),
     [swaps]
   );
+  const pendingPeer = useMemo(
+    () => swaps.filter((s) => s.status === "pending_peer"),
+    [swaps]
+  );
   const openSwaps = useMemo(
     () => swaps.filter((s) => s.status === "open"),
     [swaps]
@@ -151,6 +157,12 @@ export default function ManagerSwapsPage() {
                 {stats.claimed} awaiting approval
               </StatusBadge>
             )}
+            {stats.pendingPeer > 0 && (
+              <StatusBadge variant="neutral">
+                <UserCheck className="h-3 w-3" />
+                {stats.pendingPeer} awaiting peer
+              </StatusBadge>
+            )}
             <StatusBadge variant="info">
               <ArrowLeftRight className="h-3 w-3" />
               {stats.open} open
@@ -187,6 +199,26 @@ export default function ManagerSwapsPage() {
                     onReject={() => handleReject(swap.id)}
                     highlight
                   />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Awaiting Peer Response */}
+          {pendingPeer.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Awaiting Peer Response
+                </h2>
+                <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                  {pendingPeer.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {pendingPeer.map((swap, i) => (
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeImpact(schedule, swap)} />
                 ))}
               </div>
             </section>
@@ -402,6 +434,7 @@ function ManagerSwapCard({
                 Lead
               </span>
             )}
+            <ManagerSwapModeBadge mode={swap.mode} />
             <span className="text-[10px] text-muted-foreground">
               {formatDistanceToNow(postedAt, { addSuffix: true })}
             </span>
@@ -423,6 +456,24 @@ function ManagerSwapCard({
             </div>
             <span className="text-xs text-muted-foreground">{swap.reason}</span>
           </div>
+
+          {/* Trade info */}
+          {swap.mode === "trade" && swap.tradeShiftDate && (
+            <div className="flex items-center gap-2 mb-2">
+              <Repeat2 className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">In exchange for:</span>
+              <div className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5">
+                {swap.tradeShiftType === "day" ? (
+                  <Sun className="h-2.5 w-2.5 text-warning" />
+                ) : (
+                  <Moon className="h-2.5 w-2.5 text-primary" />
+                )}
+                <span className="text-[10px] font-medium text-foreground">
+                  {format(parseISO(swap.tradeShiftDate), "EEE, MMM d")}
+                </span>
+              </div>
+            </div>
+          )}
 
           {claimer && (
             <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-1.5">
@@ -477,18 +528,11 @@ function ManagerSwapCard({
 function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
   const config = {
     open: { variant: "info" as const, icon: ArrowLeftRight, label: "Open" },
+    pending_peer: { variant: "neutral" as const, icon: Clock, label: "Awaiting Peer" },
     claimed: { variant: "warning" as const, icon: Clock, label: "Pending" },
-    approved: {
-      variant: "success" as const,
-      icon: CheckCircle2,
-      label: "Approved",
-    },
+    approved: { variant: "success" as const, icon: CheckCircle2, label: "Approved" },
     rejected: { variant: "error" as const, icon: XCircle, label: "Rejected" },
-    cancelled: {
-      variant: "neutral" as const,
-      icon: XCircle,
-      label: "Cancelled",
-    },
+    cancelled: { variant: "neutral" as const, icon: XCircle, label: "Cancelled" },
   }[status];
 
   return (
@@ -496,5 +540,20 @@ function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
       <config.icon className="h-3 w-3" />
       {config.label}
     </StatusBadge>
+  );
+}
+
+function ManagerSwapModeBadge({ mode }: { mode: SwapMode }) {
+  const config = {
+    open: { icon: ArrowLeftRight, label: "Open", className: "bg-muted text-muted-foreground" },
+    direct: { icon: UserCheck, label: "Direct", className: "bg-primary/10 text-primary" },
+    trade: { icon: Repeat2, label: "Trade", className: "bg-accent/10 text-accent-foreground" },
+  }[mode];
+
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium", config.className)}>
+      <config.icon className="h-2.5 w-2.5" />
+      {config.label}
+    </span>
   );
 }
