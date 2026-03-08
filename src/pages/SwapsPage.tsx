@@ -277,7 +277,7 @@ export default function ManagerSwapsPage() {
               </div>
               <div className="space-y-2">
                 {pendingPeer.map((swap, i) => (
-                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeImpact(schedule, swap)} />
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeSwapImpact(schedule, swap)} />
                 ))}
               </div>
             </section>
