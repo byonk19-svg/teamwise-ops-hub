@@ -19,42 +19,36 @@ import { motion, AnimatePresence } from "framer-motion";
 const floatingCards = [
   {
     icon: CalendarDays,
-    title: "Next Shift",
-    detail: "Tomorrow · 7:00 AM – 3:00 PM",
+    title: "Schedule",
+    detail: "View & manage weekly shifts",
     color: "bg-sidebar-accent",
-    position: "top-[15%] left-[8%]",
+    position: "top-[18%] left-[8%]",
     delay: 0.6,
   },
   {
     icon: ArrowLeftRight,
-    title: "Swap Request",
-    detail: "Aleyce → Jordan · Pending",
+    title: "Swaps",
+    detail: "Request & approve trades",
     color: "bg-sidebar-ring/20",
-    position: "top-[38%] right-[6%]",
+    position: "top-[40%] right-[6%]",
     delay: 0.8,
   },
   {
     icon: Users,
-    title: "Coverage",
-    detail: "12/14 shifts filled",
+    title: "Team",
+    detail: "See who's on today",
     color: "bg-sidebar-accent",
-    position: "bottom-[28%] left-[12%]",
+    position: "bottom-[32%] left-[12%]",
     delay: 1.0,
   },
   {
-    icon: Activity,
-    title: "Team Status",
-    detail: "All clear · No gaps",
+    icon: Clock,
+    title: "Availability",
+    detail: "Set your preferred hours",
     color: "bg-sidebar-ring/20",
-    position: "bottom-[12%] right-[10%]",
+    position: "bottom-[14%] right-[10%]",
     delay: 1.2,
   },
-];
-
-const stats = [
-  { value: "98%", label: "Coverage rate" },
-  { value: "2min", label: "Avg. swap time" },
-  { value: "40+", label: "Teams active" },
 ];
 
 export default function AuthPage() {
