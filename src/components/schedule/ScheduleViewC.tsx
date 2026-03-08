@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { format, parseISO, isFirstDayOfMonth } from "date-fns";
+import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
 import { cn } from "@/lib/utils";
 
@@ -27,48 +27,64 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
   return (
     <div>
       {/* Day headers - sticky */}
-      <div className="grid grid-cols-7 gap-2.5 mb-2 sticky top-0 bg-background z-10 py-2">
+      <div className="grid grid-cols-7 gap-2 mb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2.5 -mx-1 px-1">
         {DAYS.map((day) => (
-          <div key={day} className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div key={day} className="text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             {day}
           </div>
         ))}
       </div>
 
       {/* Week rows */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {weeks.map((week, wi) => (
           <div key={wi}>
-            <p className="text-[10px] font-medium text-muted-foreground mb-1.5 pl-0.5">
-              Week {wi + 1}
-            </p>
-            <div className="grid grid-cols-7 gap-2.5">
+            <div className="flex items-center gap-2 mb-2 pl-0.5">
+              <p className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">
+                Week {wi + 1}
+              </p>
+              <div className="flex-1 h-px bg-border/60" />
+            </div>
+            <div className="grid grid-cols-7 gap-2">
               {week.map((slot) => {
                 const status = getCoverageStatus(slot);
                 const lead = getLeadAssignment(slot);
                 const staff = getStaffAssignments(slot);
                 const date = parseISO(slot.date);
                 const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
+                const today = isToday(date);
+                const weekend = isWeekend(date);
 
                 return (
                   <button
                     key={slot.id}
                     onClick={() => onClickSlot(slot)}
                     className={cn(
-                      "rounded-lg border p-3 text-left transition-all hover:ring-2 hover:ring-primary/20",
-                      status === "ok" && "bg-card",
-                      status === "warning" && "bg-warning/5 border-warning/30",
-                      status === "error" && "bg-destructive/5 border-destructive/30"
+                      "group rounded-lg border p-2.5 text-left transition-all duration-150",
+                      "hover:shadow-md hover:-translate-y-px hover:border-primary/25",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                      status === "ok" && "bg-card border-border",
+                      status === "ok" && weekend && "bg-muted/40 border-border/70",
+                      status === "warning" && "bg-warning/5 border-warning/25",
+                      status === "error" && "bg-destructive/4 border-destructive/25",
+                      today && "ring-2 ring-primary/30 shadow-sm"
                     )}
                   >
-                    {/* Date */}
-                    <div className="flex items-center justify-between mb-2">
+                    {/* Date header */}
+                    <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-baseline gap-1">
-                        <span className="font-heading font-bold text-sm">{format(date, "d")}</span>
-                        {monthLabel && <span className="text-[9px] text-muted-foreground">{monthLabel}</span>}
+                        <span className={cn(
+                          "font-heading font-bold text-sm leading-none",
+                          today && "text-primary"
+                        )}>
+                          {format(date, "d")}
+                        </span>
+                        {monthLabel && (
+                          <span className="text-[9px] font-medium text-muted-foreground">{monthLabel}</span>
+                        )}
                       </div>
                       <span className={cn(
-                        "text-[10px] font-bold font-heading",
+                        "text-[10px] font-bold font-heading tabular-nums leading-none",
                         status === "ok" ? "text-success" : status === "warning" ? "text-warning-foreground" : "text-destructive"
                       )}>
                         {slot.assignments.length}/{slot.minStaff}
@@ -77,27 +93,27 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, onClic
 
                     {/* Lead */}
                     {lead ? (
-                      <div className="rounded bg-primary/10 px-1.5 py-1 mb-1.5">
-                        <p className="text-[9px] text-muted-foreground leading-none">Lead:</p>
-                        <p className="text-[11px] font-medium text-primary">{lead.name}</p>
+                      <div className="rounded-md bg-primary/8 px-2 py-1 mb-1.5 border border-primary/10">
+                        <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
+                        <p className="text-[11px] font-semibold text-primary mt-0.5">{lead.name}</p>
                       </div>
                     ) : slot.assignments.length > 0 ? (
-                      <div className="rounded bg-destructive/10 px-1.5 py-1 mb-1.5">
+                      <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1.5 border border-destructive/10">
                         <p className="text-[9px] font-medium text-destructive">No lead</p>
                       </div>
                     ) : null}
 
-                    {/* Staff - simple text list */}
+                    {/* Staff */}
                     {staff.length > 0 && (
-                      <div className="space-y-px">
+                      <div className="space-y-0">
                         {staff.map((t) => (
-                          <p key={t.id} className="text-[10px] text-foreground/70">{t.name}</p>
+                          <p key={t.id} className="text-[10px] text-foreground/60 leading-relaxed">{t.name}</p>
                         ))}
                       </div>
                     )}
 
                     {slot.assignments.length === 0 && (
-                      <p className="text-[9px] text-destructive/40 mt-1">Unassigned</p>
+                      <p className="text-[9px] text-destructive/30 mt-2 text-center italic">Unassigned</p>
                     )}
                   </button>
                 );
