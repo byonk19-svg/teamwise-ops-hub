@@ -7,17 +7,6 @@ import { cn } from "@/lib/utils";
 import { Shield, User } from "lucide-react";
 import { TherapistDetailDialog } from "@/components/team/TherapistDetailDialog";
 
-const CERTIFICATIONS: Record<string, string[]> = {
-  t1: ["RRT", "NPS", "ACCS"],
-  t2: ["RRT", "NPS"],
-  t3: ["RRT", "RPFT"],
-  t4: ["RRT", "NPS", "CPFT"],
-  t5: ["RRT"],
-  t6: ["RRT", "RPFT"],
-  t7: ["CRT"],
-  t8: ["RRT"],
-  t9: ["CRT", "RRT"],
-};
 
 function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: () => void }) {
   const certs = CERTIFICATIONS[therapist.id] ?? [];
