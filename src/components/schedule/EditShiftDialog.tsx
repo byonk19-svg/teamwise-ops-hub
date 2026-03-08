@@ -55,7 +55,15 @@ export function EditShiftDialog({ slot, allSlots = [], open, onOpenChange, onUpd
     }
 
     return meta;
-  }, [allSlots, slot, assignedIds]);
+  }, [allSlots, slot]);
+
+  if (!slot) return null;
+
+  const date = parseISO(slot.date);
+  const status = getCoverageStatus(slot);
+  const assignedIds = new Set(slot.assignments.map((a) => a.therapistId));
+  const leads = THERAPISTS.filter((t) => t.role === "lead");
+  const staff = THERAPISTS.filter((t) => t.role === "staff");
 
   function toggleTherapist(therapistId: string) {
     const newAssignments = assignedIds.has(therapistId)
