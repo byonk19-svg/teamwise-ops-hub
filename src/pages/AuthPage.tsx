@@ -314,6 +314,67 @@ export default function AuthPage() {
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-3.5">
+                {/* Sign-up only fields */}
+                {!isLogin && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="firstName" className="text-[13px] font-medium text-foreground/70">
+                          First name
+                        </Label>
+                        <Input
+                          id="firstName"
+                          placeholder="Jane"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          required
+                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="lastName" className="text-[13px] font-medium text-foreground/70">
+                          Last name
+                        </Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Smith"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          required
+                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-[13px] font-medium text-foreground/70">
+                        Phone number
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="role" className="text-[13px] font-medium text-foreground/70">
+                        Your role
+                      </Label>
+                      <Select value={role} onValueChange={(v) => setRole(v as "manager" | "therapist")}>
+                        <SelectTrigger className="h-11 text-sm rounded-lg border-border/70 bg-background/80 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="therapist">Therapist / Staff</SelectItem>
+                          <SelectItem value="manager">Manager</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
                     Email address
