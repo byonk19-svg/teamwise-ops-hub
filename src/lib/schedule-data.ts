@@ -8,8 +8,19 @@ export interface Therapist {
   color: string; // HSL values
 }
 
+export type AssignmentStatus = "active" | "leave-early" | "cancelled" | "call-in" | "on-call";
+
+export const ASSIGNMENT_STATUSES: { value: AssignmentStatus; label: string; color: string }[] = [
+  { value: "active", label: "Active", color: "text-success" },
+  { value: "leave-early", label: "Leave Early", color: "text-warning-foreground" },
+  { value: "cancelled", label: "Cancelled", color: "text-destructive" },
+  { value: "call-in", label: "Call In", color: "text-destructive" },
+  { value: "on-call", label: "On Call", color: "text-muted-foreground" },
+];
+
 export interface ShiftAssignment {
   therapistId: string;
+  status?: AssignmentStatus;
 }
 
 export interface ShiftSlot {

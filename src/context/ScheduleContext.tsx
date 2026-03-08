@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { ShiftSlot, generateSchedule, getTherapist } from "@/lib/schedule-data";
+import { ShiftSlot, generateSchedule, getTherapist, AssignmentStatus } from "@/lib/schedule-data";
 
 const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
