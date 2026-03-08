@@ -7,12 +7,9 @@ import { Label } from "@/components/ui/label";
 import {
   CalendarDays,
   Loader2,
-  Shield,
   ArrowRight,
-  HelpCircle,
   Users,
   ArrowLeftRight,
-  Clock,
   BarChart3,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
