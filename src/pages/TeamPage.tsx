@@ -36,10 +36,6 @@ function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: 
             {isLead ? <><Shield className="h-2.5 w-2.5 mr-0.5" />Lead</> : <><User className="h-2.5 w-2.5 mr-0.5" />Staff</>}
           </Badge>
         </div>
-
-        </div>
-      </div>
-    </Card>
       </div>
     </Card>
   );
