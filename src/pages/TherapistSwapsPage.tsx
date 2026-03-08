@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { getTherapist, THERAPISTS } from "@/lib/schedule-data";
+import { getTherapist, THERAPISTS, generateSchedule, ShiftSlot } from "@/lib/schedule-data";
 import { ShiftSwap, SwapMode, generateSwaps, getSwapModeLabel } from "@/lib/swap-data";
 import { motion } from "framer-motion";
 import {
@@ -34,6 +34,10 @@ import {
   UserCheck,
   Repeat2,
   Send,
+  Users,
+  ArrowRight,
+  Shield,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
