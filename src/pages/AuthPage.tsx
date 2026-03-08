@@ -35,6 +35,10 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"manager" | "therapist">("therapist");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,12 +52,22 @@ export default function AuthPage() {
         if (error) throw error;
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { first_name: firstName, last_name: lastName },
+          },
         });
         if (error) throw error;
+
+        // Insert role and update profile with phone
+        if (data.user) {
+          await supabase.from("user_roles").insert({ user_id: data.user.id, role });
+          await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
+        }
+
         toast({ title: "Account created", description: "Check your email to verify your account." });
       }
     } catch (error: any) {
