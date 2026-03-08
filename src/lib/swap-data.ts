@@ -1,6 +1,9 @@
 import { format, addDays } from "date-fns";
 import { THERAPISTS, Therapist } from "./schedule-data";
 
+// Must match the schedule cycle start in SchedulePage
+const SCHEDULE_CYCLE_START = new Date(2026, 2, 22);
+
 export type SwapStatus = "open" | "claimed" | "approved" | "rejected" | "cancelled";
 
 export interface ShiftSwap {
