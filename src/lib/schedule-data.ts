@@ -140,16 +140,16 @@ export function generateSchedule(startDate: Date, weeks: number = 6): ShiftSlot[
     const dayAssignments: ShiftAssignment[] = isSaturday
       ? d % 21 === 0
         ? [] // Some Saturdays empty
-        : [{ therapistId: "t2" }, { therapistId: "t7" }] // Reduced Sat staffing
+        : [{ therapistId: "t2" }, { therapistId: "t7" }, { therapistId: "t5" }] // Sat staffing
       : DAY_PATTERNS[patternIdx].map((id) => ({ therapistId: id }));
 
     // Night shift
     const nightAssignments: ShiftAssignment[] = isSaturday
-      ? []
+      ? [{ therapistId: "t3" }, { therapistId: "t6" }, { therapistId: "t8" }]
       : NIGHT_PATTERNS[patternIdx].map((id) => ({ therapistId: id }));
 
-    const minDay = isSaturday ? 1 : 4;
-    const minNight = isSaturday ? 1 : 3;
+    const minDay = isSaturday ? 3 : 4;
+    const minNight = isSaturday ? 3 : 3;
 
     slots.push({
       id: `${date}-day`,
