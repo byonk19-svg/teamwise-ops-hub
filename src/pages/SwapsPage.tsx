@@ -157,6 +157,12 @@ export default function ManagerSwapsPage() {
                 {stats.claimed} awaiting approval
               </StatusBadge>
             )}
+            {stats.pendingPeer > 0 && (
+              <StatusBadge variant="neutral">
+                <UserCheck className="h-3 w-3" />
+                {stats.pendingPeer} awaiting peer
+              </StatusBadge>
+            )}
             <StatusBadge variant="info">
               <ArrowLeftRight className="h-3 w-3" />
               {stats.open} open
