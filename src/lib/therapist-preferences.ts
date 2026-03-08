@@ -16,15 +16,15 @@ const defaults: TherapistPreferences = {
 
 // Seed realistic preferences
 const SEED: Record<string, Partial<TherapistPreferences>> = {
-  t1: { preferredDays: [1, 2, 3, 4, 5], preferredWeekends: "alternating", notes: "Prefers day shifts" },
-  t2: { preferredDays: [1, 2, 4, 5], preferredWeekends: "as-needed" },
-  t3: { preferredDays: [0, 1, 2, 3, 4], preferredWeekends: "every", notes: "Flexible on Sundays" },
-  t4: { preferredDays: [1, 3, 4, 5], preferredWeekends: "none" },
-  t5: { preferredDays: [1, 2, 3, 4, 5], preferredWeekends: "alternating" },
-  t6: { preferredDays: [2, 3, 4, 5], preferredWeekends: "as-needed", notes: "No Mondays if possible" },
-  t7: { preferredDays: [1, 2, 3, 4, 5], preferredWeekends: "none" },
-  t8: { preferredDays: [1, 2, 3, 4], preferredWeekends: "alternating" },
-  t9: { preferredDays: [1, 2, 3, 4, 5, 6], preferredWeekends: "every" },
+  t1: { preferredDays: [1, 2, 3, 4, 5], unavailableDays: [0], preferredWeekends: "alternating", notes: "Prefers day shifts" },
+  t2: { preferredDays: [1, 2, 4, 5], unavailableDays: [3], preferredWeekends: "as-needed" },
+  t3: { preferredDays: [0, 1, 2, 3, 4], unavailableDays: [6], preferredWeekends: "every", notes: "Flexible on Sundays" },
+  t4: { preferredDays: [1, 3, 4, 5], unavailableDays: [0, 6], preferredWeekends: "none" },
+  t5: { preferredDays: [1, 2, 3, 4, 5], unavailableDays: [], preferredWeekends: "alternating" },
+  t6: { preferredDays: [2, 3, 4, 5], unavailableDays: [1], preferredWeekends: "as-needed", notes: "No Mondays if possible" },
+  t7: { preferredDays: [1, 2, 3, 4, 5], unavailableDays: [0, 6], preferredWeekends: "none" },
+  t8: { preferredDays: [1, 2, 3, 4], unavailableDays: [5], preferredWeekends: "alternating" },
+  t9: { preferredDays: [1, 2, 3, 4, 5, 6], unavailableDays: [], preferredWeekends: "every" },
 };
 
 // In-memory store (would come from DB in production)
