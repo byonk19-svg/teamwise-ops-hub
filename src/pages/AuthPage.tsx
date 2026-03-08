@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   CalendarDays,
   Loader2,
   ArrowRight,
@@ -28,6 +35,10 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"manager" | "therapist">("therapist");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -41,12 +52,22 @@ export default function AuthPage() {
         if (error) throw error;
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { first_name: firstName, last_name: lastName },
+          },
         });
         if (error) throw error;
+
+        // Insert role and update profile with phone
+        if (data.user) {
+          await supabase.from("user_roles").insert({ user_id: data.user.id, role });
+          await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
+        }
+
         toast({ title: "Account created", description: "Check your email to verify your account." });
       }
     } catch (error: any) {
@@ -293,6 +314,67 @@ export default function AuthPage() {
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-3.5">
+                {/* Sign-up only fields */}
+                {!isLogin && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="firstName" className="text-[13px] font-medium text-foreground/70">
+                          First name
+                        </Label>
+                        <Input
+                          id="firstName"
+                          placeholder="Jane"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          required
+                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="lastName" className="text-[13px] font-medium text-foreground/70">
+                          Last name
+                        </Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Smith"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          required
+                          className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-[13px] font-medium text-foreground/70">
+                        Phone number
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="h-11 text-sm rounded-lg border-border/70 bg-background/80 placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all shadow-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="role" className="text-[13px] font-medium text-foreground/70">
+                        Your role
+                      </Label>
+                      <Select value={role} onValueChange={(v) => setRole(v as "manager" | "therapist")}>
+                        <SelectTrigger className="h-11 text-sm rounded-lg border-border/70 bg-background/80 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="therapist">Therapist / Staff</SelectItem>
+                          <SelectItem value="manager">Manager</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
                     Email address
