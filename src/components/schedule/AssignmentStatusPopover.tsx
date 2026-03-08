@@ -56,12 +56,16 @@ export function AssignmentStatusPopover({
 
   const handleStatusClick = (status: AssignmentStatus) => {
     setAssignmentStatus(slotId, therapistId, status);
-    if (isLead && (status === "cancelled" || status === "call-in" || status === "on-call")) {
-      // Don't close yet — show replacement picker
-      setPendingStatus(status);
-    } else {
+    if (status === "active") {
+      // Reset — close immediately
       setPendingStatus(null);
       setOpen(false);
+    } else if (isLead && (status === "cancelled" || status === "call-in" || status === "on-call")) {
+      // Lead needs replacement — keep open
+      setPendingStatus(status);
+    } else {
+      // Non-active status — keep open to show reset option
+      setPendingStatus(status);
     }
   };
 
@@ -145,7 +149,7 @@ export function AssignmentStatusPopover({
           })}
 
           {/* Reset option when not active */}
-          {effectiveStatus !== "active" && !needsReplacement && (
+          {effectiveStatus !== "active" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
