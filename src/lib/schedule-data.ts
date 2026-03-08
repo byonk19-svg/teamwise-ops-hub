@@ -24,14 +24,14 @@ export interface ShiftSlot {
 
 export const THERAPISTS: Therapist[] = [
   { id: "t1", name: "Brianna", initials: "BY", role: "lead", color: "187 55% 28%" },
-  { id: "t2", name: "Kim", initials: "KM", role: "lead", color: "38 75% 45%" },
-  { id: "t3", name: "Barbara", initials: "BA", role: "lead", color: "152 50% 38%" },
-  { id: "t4", name: "Adrienne", initials: "AD", role: "lead", color: "280 45% 45%" },
-  { id: "t5", name: "Aleyce", initials: "AL", role: "staff", color: "210 50% 45%" },
-  { id: "t6", name: "Lynn", initials: "LW", role: "staff", color: "160 45% 40%" },
-  { id: "t7", name: "Irene", initials: "IR", role: "staff", color: "0 55% 50%" },
-  { id: "t8", name: "Tannie", initials: "TN", role: "staff", color: "30 60% 45%" },
-  { id: "t9", name: "Layne", initials: "LN", role: "staff", color: "260 40% 50%" },
+  { id: "t2", name: "Kim", initials: "KM", role: "lead", color: "187 55% 28%" },
+  { id: "t3", name: "Barbara", initials: "BA", role: "lead", color: "187 55% 28%" },
+  { id: "t4", name: "Adrienne", initials: "AD", role: "lead", color: "187 55% 28%" },
+  { id: "t5", name: "Aleyce", initials: "AL", role: "staff", color: "220 12% 55%" },
+  { id: "t6", name: "Lynn", initials: "LW", role: "staff", color: "220 12% 55%" },
+  { id: "t7", name: "Irene", initials: "IR", role: "staff", color: "220 12% 55%" },
+  { id: "t8", name: "Tannie", initials: "TN", role: "staff", color: "220 12% 55%" },
+  { id: "t9", name: "Layne", initials: "LN", role: "staff", color: "220 12% 55%" },
 ];
 
 export function getTherapist(id: string): Therapist | undefined {
