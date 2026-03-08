@@ -26,8 +26,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const CYCLE_START = new Date(2026, 2, 22);
-const TOTAL_WEEKS = 6;
 
 interface CoverageImpact {
   label: string; // e.g. "Wed, Mar 25 · Day"
