@@ -150,6 +150,7 @@ export default function SchedulePage() {
             shiftView={shiftView}
             cycleStart={CYCLE_START}
             totalWeeks={TOTAL_WEEKS}
+            issuesOnly={issuesOnly}
             onClickSlot={setEditingSlot}
           />
         </div>
