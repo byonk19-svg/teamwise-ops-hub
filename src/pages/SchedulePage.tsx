@@ -1,34 +1,33 @@
-import { useMemo, useState, useCallback } from "react";
-import { format, addDays, startOfWeek, addWeeks, getDay } from "date-fns";
+import { useState, useMemo } from "react";
+import { format, addDays, addWeeks, startOfWeek } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
-import { ScheduleDayCell } from "@/components/schedule/ScheduleDayCell";
+import { ScheduleViewA } from "@/components/schedule/ScheduleViewA";
+import { ScheduleViewB } from "@/components/schedule/ScheduleViewB";
+import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { Send, Printer, History, Sparkles, AlertTriangle } from "lucide-react";
+import { Send, Printer, History, Sparkles, AlertTriangle, LayoutGrid, Columns3, List } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const CYCLE_START = new Date(2026, 2, 22); // Mar 22 2026 (Sunday)
+const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
-const DAYS_HEADER = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+type ViewMode = "a" | "b" | "c";
+
+const VIEW_OPTIONS: { id: ViewMode; label: string; desc: string; icon: typeof LayoutGrid }[] = [
+  { id: "a", label: "A", desc: "Week detail + overview strip", icon: Columns3 },
+  { id: "b", label: "B", desc: "Compact grid + detail panel", icon: LayoutGrid },
+  { id: "c", label: "C", desc: "Scrollable full calendar", icon: List },
+];
 
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
-
-  // Group slots by week rows
-  const weeks = useMemo(() => {
-    const filtered = slots.filter((s) => s.type === shiftView);
-    const result: ShiftSlot[][] = [];
-    for (let w = 0; w < TOTAL_WEEKS; w++) {
-      const weekSlots = filtered.slice(w * 7, (w + 1) * 7);
-      result.push(weekSlots);
-    }
-    return result;
-  }, [slots, shiftView]);
+  const [viewMode, setViewMode] = useState<ViewMode>("b");
 
   const issueCount = useMemo(() => {
     return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
@@ -37,133 +36,129 @@ export default function SchedulePage() {
   const cycleEnd = addDays(addWeeks(CYCLE_START, TOTAL_WEEKS), -1);
 
   function handleUpdate(slotId: string, assignments: { therapistId: string }[]) {
-    setSlots((prev) =>
-      prev.map((s) => (s.id === slotId ? { ...s, assignments } : s))
-    );
-    // Update the editing slot too
+    setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, assignments } : s)));
     setEditingSlot((prev) => (prev?.id === slotId ? { ...prev, assignments } : prev));
   }
 
   return (
     <AppLayout>
-      <div className="flex flex-col h-full overflow-auto">
+      <div className="flex flex-col h-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-6 pt-6 pb-4"
+          className="px-6 pt-5 pb-4 border-b bg-card flex-shrink-0"
         >
-          <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight mb-1">
-            Coverage
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Click a day to edit therapist assignments
-          </p>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h1 className="font-heading text-xl font-bold text-foreground tracking-tight mb-0.5">
+                Coverage
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                {format(CYCLE_START, "MMM d")} – {format(cycleEnd, "MMM d, yyyy")} · {TOTAL_WEEKS} weeks · Click a day to edit
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <Printer className="h-3.5 w-3.5" /> Print
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <Sparkles className="h-3.5 w-3.5" /> Auto-draft
+              </Button>
+              <Button size="sm" className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
+                <Send className="h-3.5 w-3.5" /> Publish
+              </Button>
+            </div>
+          </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <Printer className="h-3.5 w-3.5" /> Print schedule
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              Week roster
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <History className="h-3.5 w-3.5" /> Publish history
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <Sparkles className="h-3.5 w-3.5" /> Auto-draft
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/5">
-              Clear draft
-            </Button>
-            <Button size="sm" className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
-              <Send className="h-3.5 w-3.5" /> Publish
-            </Button>
+          {/* Controls row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Shift tabs */}
+              <div className="flex rounded-lg border overflow-hidden">
+                <button
+                  onClick={() => setShiftView("day")}
+                  className={cn(
+                    "px-3.5 py-1.5 text-xs font-medium transition-colors",
+                    shiftView === "day"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Day Shift
+                </button>
+                <button
+                  onClick={() => setShiftView("night")}
+                  className={cn(
+                    "px-3.5 py-1.5 text-xs font-medium transition-colors",
+                    shiftView === "night"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Night Shift
+                </button>
+              </div>
+
+              {issueCount > 0 && (
+                <StatusBadge variant="error">
+                  <AlertTriangle className="h-3 w-3" />
+                  {issueCount} {issueCount === 1 ? "issue" : "issues"}
+                </StatusBadge>
+              )}
+            </div>
+
+            {/* View toggle */}
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
+              {VIEW_OPTIONS.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setViewMode(v.id)}
+                  title={v.desc}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                    viewMode === v.id
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <v.icon className="h-3.5 w-3.5" />
+                  {v.desc}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
-        {/* Cycle info */}
-        <div className="mx-6 rounded-lg border bg-card px-5 py-4 mb-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">
-            Cycle
-          </p>
-          <p className="font-heading font-bold text-foreground">
-            {format(CYCLE_START, "MMM d")}–{format(cycleEnd, "MMM d")}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {format(CYCLE_START, "MMM d, yyyy")} to {format(cycleEnd, "MMM d, yyyy")}
-          </p>
-        </div>
-
-        {/* Shift tabs + issues */}
-        <div className="px-6 flex items-center gap-3 mb-3">
-          <div className="flex rounded-lg border overflow-hidden">
-            <button
-              onClick={() => setShiftView("day")}
-              className={cn(
-                "px-4 py-1.5 text-sm font-medium transition-colors",
-                shiftView === "day"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Day Shift
-            </button>
-            <button
-              onClick={() => setShiftView("night")}
-              className={cn(
-                "px-4 py-1.5 text-sm font-medium transition-colors",
-                shiftView === "night"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Night Shift
-            </button>
-          </div>
-
-          {issueCount > 0 && (
-            <StatusBadge variant="error">
-              <AlertTriangle className="h-3 w-3" />
-              {issueCount} {issueCount === 1 ? "Issue" : "Issues"}
-            </StatusBadge>
+        {/* View Content */}
+        <div className="flex-1 overflow-auto p-5">
+          {viewMode === "a" && (
+            <ScheduleViewA
+              slots={slots}
+              shiftView={shiftView}
+              cycleStart={CYCLE_START}
+              totalWeeks={TOTAL_WEEKS}
+              onClickSlot={setEditingSlot}
+            />
           )}
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="px-6 pb-6 flex-1">
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-1.5 mb-1.5">
-            {DAYS_HEADER.map((day) => (
-              <div
-                key={day}
-                className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground py-1.5"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Week rows */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-1.5"
-          >
-            {weeks.map((week, wi) => (
-              <div key={wi} className="grid grid-cols-7 gap-1.5">
-                {week.map((slot) => (
-                  <ScheduleDayCell
-                    key={slot.id}
-                    slot={slot}
-                    onClick={(s) => setEditingSlot(s)}
-                  />
-                ))}
-              </div>
-            ))}
-          </motion.div>
+          {viewMode === "b" && (
+            <ScheduleViewB
+              slots={slots}
+              shiftView={shiftView}
+              cycleStart={CYCLE_START}
+              totalWeeks={TOTAL_WEEKS}
+              onClickSlot={setEditingSlot}
+            />
+          )}
+          {viewMode === "c" && (
+            <ScheduleViewC
+              slots={slots}
+              shiftView={shiftView}
+              cycleStart={CYCLE_START}
+              totalWeeks={TOTAL_WEEKS}
+              onClickSlot={setEditingSlot}
+            />
+          )}
         </div>
       </div>
 
