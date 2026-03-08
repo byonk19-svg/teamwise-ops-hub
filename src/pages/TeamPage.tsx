@@ -10,7 +10,6 @@ import { TherapistDetailDialog } from "@/components/team/TherapistDetailDialog";
 
 function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: () => void }) {
   const isLead = therapist.role === "lead";
-  const isLead = therapist.role === "lead";
 
   return (
     <Card
