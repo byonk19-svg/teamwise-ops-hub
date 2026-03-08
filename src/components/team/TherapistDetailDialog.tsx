@@ -137,6 +137,27 @@ export function TherapistDetailDialog({ therapist, certifications, open, onOpenC
               </div>
             </div>
 
+            {/* Unavailable days */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Prefer Not to Work</p>
+              <div className="flex gap-1.5">
+                {DAY_LABELS.map((label, i) => (
+                  <button
+                    key={i}
+                    onClick={() => toggleUnavailableDay(i)}
+                    className={cn(
+                      "h-8 w-9 rounded-md text-xs font-medium transition-colors border",
+                      currentPrefs.unavailableDays.includes(i)
+                        ? "bg-destructive text-destructive-foreground border-destructive"
+                        : "bg-card text-muted-foreground border-border hover:border-destructive/30"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Weekend preference */}
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Weekend Availability</p>
