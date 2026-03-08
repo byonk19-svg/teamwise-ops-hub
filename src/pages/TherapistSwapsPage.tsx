@@ -746,6 +746,18 @@ function PostSwapDialog({
             />
           </div>
 
+          {/* Coverage Impact Preview */}
+          {selectedDate && <CoveragePreview
+            schedule={schedule}
+            shiftDate={selectedDate}
+            shiftType={shiftType}
+            requesterId={currentUserId}
+            mode={mode}
+            targetId={targetId}
+            tradeDate={tradeDate}
+            tradeType={tradeType}
+          />}
+
           {/* Submit */}
           <Button
             className="w-full gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -760,5 +772,160 @@ function PostSwapDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ─── Coverage Preview Component ─────────────────────────────────────────────
+
+interface CoveragePreviewProps {
+  schedule: ShiftSlot[];
+  shiftDate: string;
+  shiftType: "day" | "night";
+  requesterId: string;
+  mode: SwapMode;
+  targetId: string;
+  tradeDate: string;
+  tradeType: "day" | "night";
+}
+
+function computePreviewImpact(
+  slots: ShiftSlot[],
+  date: string,
+  type: "day" | "night",
+  removedId: string,
+  addedId?: string
+) {
+  const slotId = `${date}-${type}`;
+  const slot = slots.find((s) => s.id === slotId);
+  if (!slot) return null;
+
+  const currentStaff = slot.assignments.length;
+  const hasLeadBefore = slot.assignments.some(
+    (a) => getTherapist(a.therapistId)?.role === "lead"
+  );
+
+  const afterAssignments = slot.assignments
+    .filter((a) => a.therapistId !== removedId)
+    .concat(addedId ? [{ therapistId: addedId }] : []);
+
+  const afterStaff = afterAssignments.length;
+  const hasLeadAfter = afterAssignments.some(
+    (a) => getTherapist(a.therapistId)?.role === "lead"
+  );
+
+  const staffOk = afterStaff >= slot.minStaff;
+  const leadOk = !slot.needsLead || hasLeadAfter;
+  const severity: "ok" | "warning" | "error" =
+    !staffOk || (slot.needsLead && hasLeadBefore && !hasLeadAfter) ? "error"
+    : (!leadOk) ? "warning"
+    : "ok";
+
+  return {
+    label: `${format(parseISO(date), "EEE, MMM d")} · ${type === "day" ? "Day" : "Night"}`,
+    currentStaff,
+    afterStaff,
+    minStaff: slot.minStaff,
+    hasLeadAfter,
+    needsLead: slot.needsLead,
+    staffOk,
+    leadOk,
+    severity,
+  };
+}
+
+function CoveragePreview({ schedule, shiftDate, shiftType, requesterId, mode, targetId, tradeDate, tradeType }: CoveragePreviewProps) {
+  // For open: you leave, nobody replaces yet
+  // For direct/trade: you leave, target joins (on your shift)
+  const addedOnPrimary = (mode !== "open" && targetId) ? targetId : undefined;
+  const primary = computePreviewImpact(schedule, shiftDate, shiftType, requesterId, addedOnPrimary);
+
+  // For trade: target leaves their shift, you join it
+  let tradeReturn: ReturnType<typeof computePreviewImpact> = null;
+  if (mode === "trade" && tradeDate && targetId) {
+    tradeReturn = computePreviewImpact(schedule, tradeDate, tradeType, targetId, requesterId);
+  }
+
+  if (!primary) return null;
+
+  const overallSeverity =
+    primary.severity === "error" || tradeReturn?.severity === "error" ? "error"
+    : primary.severity === "warning" || tradeReturn?.severity === "warning" ? "warning"
+    : "ok";
+
+  const isTrade = mode === "trade" && tradeReturn;
+
+  return (
+    <div className={cn(
+      "rounded-lg border px-3 py-2.5",
+      overallSeverity === "ok" && "bg-success/5 border-success/20",
+      overallSeverity === "warning" && "bg-warning/5 border-warning/20",
+      overallSeverity === "error" && "bg-destructive/5 border-destructive/20"
+    )}>
+      <div className="flex items-center gap-2 mb-2">
+        {overallSeverity === "ok" ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-success flex-shrink-0" />
+        ) : overallSeverity === "warning" ? (
+          <AlertTriangle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+        ) : (
+          <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
+        )}
+        <span className={cn(
+          "text-[11px] font-semibold",
+          overallSeverity === "ok" && "text-success",
+          overallSeverity === "warning" && "text-warning-foreground",
+          overallSeverity === "error" && "text-destructive"
+        )}>
+          {overallSeverity === "ok"
+            ? isTrade ? "Both shifts stay covered" : "Coverage looks good"
+            : isTrade ? "Coverage concern on one or more shifts" : "This may create a staffing gap"}
+        </span>
+      </div>
+
+      <div className="space-y-1">
+        <PreviewShiftRow impact={primary} direction={isTrade ? "you leave" : undefined} />
+        {tradeReturn && <PreviewShiftRow impact={tradeReturn} direction="you join" />}
+      </div>
+    </div>
+  );
+}
+
+function PreviewShiftRow({ impact, direction }: {
+  impact: NonNullable<ReturnType<typeof computePreviewImpact>>;
+  direction?: string;
+}) {
+  return (
+    <div className={cn(
+      "flex items-center gap-2 rounded-md px-2 py-1.5 text-[10px]",
+      impact.severity === "ok" ? "bg-success/5" : impact.severity === "warning" ? "bg-warning/5" : "bg-destructive/5"
+    )}>
+      <div className="flex items-center gap-1.5 min-w-0">
+        {impact.severity === "ok" ? (
+          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
+        ) : (
+          <AlertTriangle className={cn("h-3 w-3 flex-shrink-0", impact.severity === "warning" ? "text-warning" : "text-destructive")} />
+        )}
+        <span className="font-medium text-foreground whitespace-nowrap">{impact.label}</span>
+        {direction && <span className="text-muted-foreground italic">({direction})</span>}
+      </div>
+
+      <div className="flex items-center gap-1 ml-auto">
+        <Users className="h-3 w-3 text-muted-foreground" />
+        <span className="tabular-nums font-semibold">{impact.currentStaff}</span>
+        <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
+        <span className={cn("tabular-nums font-semibold", impact.staffOk ? "text-success" : "text-destructive")}>
+          {impact.afterStaff}
+        </span>
+        <span className="text-muted-foreground">/ {impact.minStaff}</span>
+      </div>
+
+      {impact.needsLead && (
+        <div className="flex items-center gap-1">
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className={cn("font-semibold", impact.leadOk ? "text-success" : "text-destructive")}>
+            {impact.leadOk ? "✓" : "✗"}
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
