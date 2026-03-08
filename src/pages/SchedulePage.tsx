@@ -1,258 +1,178 @@
 import { useMemo, useState, useCallback } from "react";
-import { format, parseISO, startOfWeek, addWeeks, addDays } from "date-fns";
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { format, addDays, startOfWeek, addWeeks, getDay } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
-import { ShiftCell } from "@/components/schedule/ShiftCell";
-import { TherapistPool } from "@/components/schedule/TherapistPool";
-import { TherapistChip } from "@/components/schedule/TherapistChip";
+import { ScheduleDayCell } from "@/components/schedule/ScheduleDayCell";
+import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { ShiftSlot, Therapist, THERAPISTS, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { ChevronLeft, ChevronRight, CalendarDays, Send, Filter } from "lucide-react";
+import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
+import { Send, Printer, History, Sparkles, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const CYCLE_START = new Date(2025, 0, 6); // Jan 6 2025
+const CYCLE_START = new Date(2026, 2, 22); // Mar 22 2026 (Sunday)
 const TOTAL_WEEKS = 6;
+const DAYS_HEADER = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [activeTherapist, setActiveTherapist] = useState<Therapist | null>(null);
+  const [shiftView, setShiftView] = useState<"day" | "night">("day");
+  const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
+  // Group slots by week rows
+  const weeks = useMemo(() => {
+    const filtered = slots.filter((s) => s.type === shiftView);
+    const result: ShiftSlot[][] = [];
+    for (let w = 0; w < TOTAL_WEEKS; w++) {
+      const weekSlots = filtered.slice(w * 7, (w + 1) * 7);
+      result.push(weekSlots);
+    }
+    return result;
+  }, [slots, shiftView]);
 
-  const currentWeekStart = useMemo(
-    () => startOfWeek(addWeeks(CYCLE_START, weekOffset), { weekStartsOn: 1 }),
-    [weekOffset]
-  );
+  const issueCount = useMemo(() => {
+    return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
+  }, [slots, shiftView]);
 
-  const weekDates = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i)),
-    [currentWeekStart]
-  );
+  const cycleEnd = addDays(addWeeks(CYCLE_START, TOTAL_WEEKS), -1);
 
-  const weekSlots = useMemo(() => {
-    const dateSet = new Set(weekDates.map((d) => format(d, "yyyy-MM-dd")));
-    return slots.filter((s) => dateSet.has(s.date));
-  }, [slots, weekDates]);
-
-  const getSlot = useCallback(
-    (dateStr: string, type: "day" | "night") =>
-      weekSlots.find((s) => s.date === dateStr && s.type === type),
-    [weekSlots]
-  );
-
-  const coverageSummary = useMemo(() => {
-    let errors = 0, warnings = 0;
-    slots.forEach((s) => {
-      const st = getCoverageStatus(s);
-      if (st === "error") errors++;
-      else if (st === "warning") warnings++;
-    });
-    return { errors, warnings, total: slots.length };
-  }, [slots]);
-
-  const assignedIds = useMemo(() => {
-    const ids = new Set<string>();
-    slots.forEach((s) => s.assignments.forEach((a) => ids.add(a.therapistId)));
-    return ids;
-  }, [slots]);
-
-  function handleDragStart(event: DragStartEvent) {
-    const therapist = event.active.data.current?.therapist as Therapist | undefined;
-    if (therapist) setActiveTherapist(therapist);
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    setActiveTherapist(null);
-    const { active, over } = event;
-    if (!over) return;
-
-    const therapist = active.data.current?.therapist as Therapist | undefined;
-    if (!therapist) return;
-
-    const slotId = over.id as string;
+  function handleUpdate(slotId: string, assignments: { therapistId: string }[]) {
     setSlots((prev) =>
-      prev.map((s) => {
-        if (s.id !== slotId) return s;
-        if (s.assignments.some((a) => a.therapistId === therapist.id)) return s;
-        if (s.assignments.length >= s.maxStaff) return s;
-        return { ...s, assignments: [...s.assignments, { therapistId: therapist.id }] };
-      })
+      prev.map((s) => (s.id === slotId ? { ...s, assignments } : s))
     );
-  }
-
-  function handleRemoveAssignment(slotId: string, therapistId: string) {
-    setSlots((prev) =>
-      prev.map((s) => {
-        if (s.id !== slotId) return s;
-        return { ...s, assignments: s.assignments.filter((a) => a.therapistId !== therapistId) };
-      })
-    );
+    // Update the editing slot too
+    setEditingSlot((prev) => (prev?.id === slotId ? { ...prev, assignments } : prev));
   }
 
   return (
     <AppLayout>
-      <div className="flex flex-col h-full">
-        {/* Top bar */}
+      <div className="flex flex-col h-full overflow-auto">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-6 py-4 border-b bg-card flex items-center justify-between flex-shrink-0"
+          className="px-6 pt-6 pb-4"
         >
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-heading text-xl font-bold text-foreground tracking-tight">
-                Schedule Builder
-              </h1>
-              <StatusBadge variant="pending">Pre-publish</StatusBadge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {format(CYCLE_START, "MMM d")} – {format(addWeeks(CYCLE_START, TOTAL_WEEKS), "MMM d, yyyy")} · {TOTAL_WEEKS} weeks
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 mr-4 text-xs">
-              {coverageSummary.errors > 0 && (
-                <StatusBadge variant="error">{coverageSummary.errors} gaps</StatusBadge>
-              )}
-              {coverageSummary.warnings > 0 && (
-                <StatusBadge variant="warning">{coverageSummary.warnings} low</StatusBadge>
-              )}
-              {coverageSummary.errors === 0 && coverageSummary.warnings === 0 && (
-                <StatusBadge variant="success">Coverage complete</StatusBadge>
-              )}
-            </div>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Filter className="h-3.5 w-3.5" />
-              Filter
+          <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight mb-1">
+            Coverage
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Click a day to edit therapist assignments
+          </p>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Printer className="h-3.5 w-3.5" /> Print schedule
             </Button>
-            <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Send className="h-3.5 w-3.5" />
-              Publish
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              Week roster
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <History className="h-3.5 w-3.5" /> Publish history
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Sparkles className="h-3.5 w-3.5" /> Auto-draft
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/5">
+              Clear draft
+            </Button>
+            <Button size="sm" className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
+              <Send className="h-3.5 w-3.5" /> Publish
             </Button>
           </div>
         </motion.div>
 
-        {/* Week nav */}
-        <div className="px-6 py-2.5 border-b bg-surface-raised flex items-center justify-between flex-shrink-0">
-          <button
-            onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
-            disabled={weekOffset === 0}
-            className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            <span className="font-heading font-semibold text-sm">
-              Week {weekOffset + 1} of {TOTAL_WEEKS}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {format(currentWeekStart, "MMM d")} – {format(addDays(currentWeekStart, 6), "MMM d")}
-            </span>
-          </div>
-          <button
-            onClick={() => setWeekOffset(Math.min(TOTAL_WEEKS - 1, weekOffset + 1))}
-            disabled={weekOffset === TOTAL_WEEKS - 1}
-            className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+        {/* Cycle info */}
+        <div className="mx-6 rounded-lg border bg-card px-5 py-4 mb-4">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">
+            Cycle
+          </p>
+          <p className="font-heading font-bold text-foreground">
+            {format(CYCLE_START, "MMM d")}–{format(cycleEnd, "MMM d")}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {format(CYCLE_START, "MMM d, yyyy")} to {format(cycleEnd, "MMM d, yyyy")}
+          </p>
         </div>
 
-        {/* Grid + Pool */}
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex flex-1 overflow-hidden">
-            {/* Grid */}
-            <div className="flex-1 overflow-auto p-4">
-              <motion.div
-                key={weekOffset}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Day headers */}
-                <div className="grid grid-cols-7 gap-2 mb-2">
-                  {weekDates.map((date, i) => {
-                    const isToday = format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-                    const isWeekend = i >= 5;
-                    return (
-                      <div
-                        key={i}
-                        className={`text-center rounded-md py-1.5 px-2 ${
-                          isToday
-                            ? "bg-primary text-primary-foreground"
-                            : isWeekend
-                            ? "bg-muted/70"
-                            : "bg-muted/40"
-                        }`}
-                      >
-                        <p className="text-[10px] font-medium uppercase tracking-wide opacity-70">
-                          {DAYS[i]}
-                        </p>
-                        <p className="text-sm font-heading font-bold">{format(date, "d")}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Day shifts row */}
-                <div className="grid grid-cols-7 gap-2 mb-2">
-                  {weekDates.map((date) => {
-                    const dateStr = format(date, "yyyy-MM-dd");
-                    const slot = getSlot(dateStr, "day");
-                    return slot ? (
-                      <ShiftCell key={slot.id} slot={slot} onRemoveAssignment={handleRemoveAssignment} />
-                    ) : (
-                      <div key={dateStr} className="min-h-[72px] rounded-md border border-dashed" />
-                    );
-                  })}
-                </div>
-
-                {/* Night shifts row */}
-                <div className="grid grid-cols-7 gap-2">
-                  {weekDates.map((date) => {
-                    const dateStr = format(date, "yyyy-MM-dd");
-                    const slot = getSlot(dateStr, "night");
-                    return slot ? (
-                      <ShiftCell key={slot.id} slot={slot} onRemoveAssignment={handleRemoveAssignment} />
-                    ) : (
-                      <div key={dateStr} className="min-h-[72px] rounded-md border border-dashed" />
-                    );
-                  })}
-                </div>
-
-                {/* Legend */}
-                <div className="mt-4 flex items-center gap-4 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-destructive" /> No coverage
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-warning" /> Below minimum
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-success" /> Covered
-                  </span>
-                  <span className="flex items-center gap-1">★ Lead therapist</span>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Therapist Pool Sidebar */}
-            <div className="border-l p-4 flex-shrink-0">
-              <TherapistPool assignedTherapistIds={assignedIds} />
-            </div>
+        {/* Shift tabs + issues */}
+        <div className="px-6 flex items-center gap-3 mb-3">
+          <div className="flex rounded-lg border overflow-hidden">
+            <button
+              onClick={() => setShiftView("day")}
+              className={cn(
+                "px-4 py-1.5 text-sm font-medium transition-colors",
+                shiftView === "day"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Day Shift
+            </button>
+            <button
+              onClick={() => setShiftView("night")}
+              className={cn(
+                "px-4 py-1.5 text-sm font-medium transition-colors",
+                shiftView === "night"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Night Shift
+            </button>
           </div>
 
-          <DragOverlay>
-            {activeTherapist && <TherapistChip therapist={activeTherapist} isDragOverlay />}
-          </DragOverlay>
-        </DndContext>
+          {issueCount > 0 && (
+            <StatusBadge variant="error">
+              <AlertTriangle className="h-3 w-3" />
+              {issueCount} {issueCount === 1 ? "Issue" : "Issues"}
+            </StatusBadge>
+          )}
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="px-6 pb-6 flex-1">
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+            {DAYS_HEADER.map((day) => (
+              <div
+                key={day}
+                className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground py-1.5"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Week rows */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-1.5"
+          >
+            {weeks.map((week, wi) => (
+              <div key={wi} className="grid grid-cols-7 gap-1.5">
+                {week.map((slot) => (
+                  <ScheduleDayCell
+                    key={slot.id}
+                    slot={slot}
+                    onClick={(s) => setEditingSlot(s)}
+                  />
+                ))}
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
+
+      <EditShiftDialog
+        slot={editingSlot}
+        open={!!editingSlot}
+        onOpenChange={(open) => !open && setEditingSlot(null)}
+        onUpdate={handleUpdate}
+      />
     </AppLayout>
   );
 }
