@@ -1,10 +1,11 @@
 import { useMemo, useRef, useCallback } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
-import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
+import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments, AssignmentStatus, ASSIGNMENT_STATUSES } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { AssignmentStatusPopover } from "./AssignmentStatusPopover";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
