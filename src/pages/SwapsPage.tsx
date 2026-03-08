@@ -4,7 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import { getTherapist } from "@/lib/schedule-data";
+import { getTherapist, ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
 import { ShiftSwap, generateSwaps, getSwapStats } from "@/lib/swap-data";
 import { motion } from "framer-motion";
 import {
@@ -16,11 +16,74 @@ import {
   Clock,
   XCircle,
   ShieldCheck,
+  AlertTriangle,
+  Shield,
+  ArrowRight,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
+const CYCLE_START = new Date(2026, 2, 22);
+const TOTAL_WEEKS = 6;
+
+interface CoverageImpact {
+  currentStaff: number;
+  afterStaff: number;
+  minStaff: number;
+  hasLeadBefore: boolean;
+  hasLeadAfter: boolean;
+  needsLead: boolean;
+  claimerAlreadyScheduled: boolean;
+  requesterIsLead: boolean;
+  claimerIsLead: boolean;
+}
+
+function computeImpact(
+  slots: ShiftSlot[],
+  swap: ShiftSwap
+): CoverageImpact | null {
+  const slotId = `${swap.shiftDate}-${swap.shiftType}`;
+  const slot = slots.find((s) => s.id === slotId);
+  if (!slot) return null;
+
+  const requester = getTherapist(swap.requesterId);
+  const claimer = swap.claimedById ? getTherapist(swap.claimedById) : null;
+
+  const currentStaff = slot.assignments.length;
+  const hasLeadBefore = slot.assignments.some(
+    (a) => getTherapist(a.therapistId)?.role === "lead"
+  );
+
+  // After swap: remove requester, add claimer
+  const afterAssignments = slot.assignments
+    .filter((a) => a.therapistId !== swap.requesterId)
+    .concat(claimer ? [{ therapistId: swap.claimedById! }] : []);
+
+  const afterStaff = afterAssignments.length;
+  const hasLeadAfter = afterAssignments.some(
+    (a) => getTherapist(a.therapistId)?.role === "lead"
+  );
+
+  const claimerAlreadyScheduled = claimer
+    ? slot.assignments.some((a) => a.therapistId === swap.claimedById)
+    : false;
+
+  return {
+    currentStaff,
+    afterStaff,
+    minStaff: slot.minStaff,
+    hasLeadBefore,
+    hasLeadAfter,
+    needsLead: slot.needsLead,
+    claimerAlreadyScheduled,
+    requesterIsLead: requester?.role === "lead" || false,
+    claimerIsLead: claimer?.role === "lead" || false,
+  };
+}
+
 export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
+  const [schedule] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
 
@@ -33,20 +96,30 @@ export default function ManagerSwapsPage() {
     [swaps]
   );
   const resolved = useMemo(
-    () => swaps.filter((s) => s.status === "approved" || s.status === "rejected" || s.status === "cancelled"),
+    () =>
+      swaps.filter(
+        (s) =>
+          s.status === "approved" ||
+          s.status === "rejected" ||
+          s.status === "cancelled"
+      ),
     [swaps]
   );
 
   function handleApprove(swapId: string) {
     setSwaps((prev) =>
-      prev.map((s) => (s.id === swapId ? { ...s, status: "approved" as const } : s))
+      prev.map((s) =>
+        s.id === swapId ? { ...s, status: "approved" as const } : s
+      )
     );
     toast.success("Swap approved!");
   }
 
   function handleReject(swapId: string) {
     setSwaps((prev) =>
-      prev.map((s) => (s.id === swapId ? { ...s, status: "rejected" as const } : s))
+      prev.map((s) =>
+        s.id === swapId ? { ...s, status: "rejected" as const } : s
+      )
     );
     toast("Swap rejected");
   }
@@ -109,6 +182,7 @@ export default function ManagerSwapsPage() {
                     key={swap.id}
                     swap={swap}
                     index={i}
+                    impact={computeImpact(schedule, swap)}
                     onApprove={() => handleApprove(swap.id)}
                     onReject={() => handleReject(swap.id)}
                     highlight
@@ -132,7 +206,12 @@ export default function ManagerSwapsPage() {
               </div>
               <div className="space-y-2">
                 {openSwaps.map((swap, i) => (
-                  <ManagerSwapCard key={swap.id} swap={swap} index={i} />
+                  <ManagerSwapCard
+                    key={swap.id}
+                    swap={swap}
+                    index={i}
+                    impact={computeImpact(schedule, swap)}
+                  />
                 ))}
               </div>
             </section>
@@ -160,16 +239,127 @@ export default function ManagerSwapsPage() {
   );
 }
 
+function CoverageImpactBadge({ impact }: { impact: CoverageImpact }) {
+  const warnings: string[] = [];
+  let severity: "ok" | "warning" | "error" = "ok";
+
+  if (impact.afterStaff < impact.minStaff) {
+    warnings.push(`Drops to ${impact.afterStaff}/${impact.minStaff} staff`);
+    severity = "error";
+  }
+
+  if (impact.needsLead && impact.hasLeadBefore && !impact.hasLeadAfter) {
+    warnings.push("Loses lead coverage");
+    severity = "error";
+  }
+
+  if (impact.claimerAlreadyScheduled) {
+    warnings.push("Claimer already on this shift");
+    severity = severity === "ok" ? "warning" : severity;
+  }
+
+  if (impact.requesterIsLead && !impact.claimerIsLead && impact.needsLead) {
+    if (impact.hasLeadAfter) {
+      // Another lead exists, just note the role change
+    } else {
+      warnings.push("Lead replaced by staff");
+      severity = severity === "ok" ? "warning" : severity;
+    }
+  }
+
+  const isOk = severity === "ok";
+  const afterOk = impact.afterStaff >= impact.minStaff;
+
+  return (
+    <div
+      className={cn(
+        "rounded-lg border px-3 py-2 mt-2",
+        severity === "ok" && "bg-success/5 border-success/20",
+        severity === "warning" && "bg-warning/5 border-warning/20",
+        severity === "error" && "bg-destructive/5 border-destructive/20"
+      )}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        {severity === "ok" ? (
+          <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
+        ) : severity === "warning" ? (
+          <AlertTriangle className="h-3 w-3 text-warning flex-shrink-0" />
+        ) : (
+          <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />
+        )}
+        <span
+          className={cn(
+            "text-[11px] font-semibold",
+            severity === "ok" && "text-success",
+            severity === "warning" && "text-warning-foreground",
+            severity === "error" && "text-destructive"
+          )}
+        >
+          {isOk ? "No coverage impact" : warnings.length === 1 ? warnings[0] : `${warnings.length} concerns`}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 text-[10px]">
+        {/* Staff count */}
+        <div className="flex items-center gap-1">
+          <Users className="h-3 w-3 text-muted-foreground" />
+          <span className="text-muted-foreground">Staff:</span>
+          <span className="font-semibold tabular-nums">{impact.currentStaff}</span>
+          <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
+          <span
+            className={cn(
+              "font-semibold tabular-nums",
+              afterOk ? "text-success" : "text-destructive"
+            )}
+          >
+            {impact.afterStaff}
+          </span>
+          <span className="text-muted-foreground">/ {impact.minStaff} min</span>
+        </div>
+
+        {/* Lead status */}
+        {impact.needsLead && (
+          <div className="flex items-center gap-1">
+            <Shield className="h-3 w-3 text-muted-foreground" />
+            <span className="text-muted-foreground">Lead:</span>
+            <span
+              className={cn(
+                "font-semibold",
+                impact.hasLeadAfter ? "text-success" : "text-destructive"
+              )}
+            >
+              {impact.hasLeadAfter ? "Covered" : "Missing"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {warnings.length > 1 && (
+        <ul className="mt-1.5 space-y-0.5">
+          {warnings.map((w, i) => (
+            <li key={i} className="text-[10px] text-destructive/80 flex items-center gap-1">
+              <span className="h-1 w-1 rounded-full bg-destructive/50" />
+              {w}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function ManagerSwapCard({
   swap,
   index,
   highlight,
+  impact,
   onApprove,
   onReject,
 }: {
   swap: ShiftSwap;
   index: number;
   highlight?: boolean;
+  impact?: CoverageImpact | null;
   onApprove?: () => void;
   onReject?: () => void;
 }) {
@@ -248,6 +438,11 @@ function ManagerSwapCard({
               </span>
             </div>
           )}
+
+          {/* Coverage Impact */}
+          {impact && swap.status === "claimed" && (
+            <CoverageImpactBadge impact={impact} />
+          )}
         </div>
 
         {/* Status + Actions */}
@@ -256,7 +451,12 @@ function ManagerSwapCard({
 
           {swap.status === "claimed" && onApprove && onReject && (
             <div className="flex items-center gap-1.5">
-              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onReject}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={onReject}
+              >
                 Reject
               </Button>
               <Button
@@ -278,9 +478,17 @@ function SwapStatusBadge({ status }: { status: ShiftSwap["status"] }) {
   const config = {
     open: { variant: "info" as const, icon: ArrowLeftRight, label: "Open" },
     claimed: { variant: "warning" as const, icon: Clock, label: "Pending" },
-    approved: { variant: "success" as const, icon: CheckCircle2, label: "Approved" },
+    approved: {
+      variant: "success" as const,
+      icon: CheckCircle2,
+      label: "Approved",
+    },
     rejected: { variant: "error" as const, icon: XCircle, label: "Rejected" },
-    cancelled: { variant: "neutral" as const, icon: XCircle, label: "Cancelled" },
+    cancelled: {
+      variant: "neutral" as const,
+      icon: XCircle,
+      label: "Cancelled",
+    },
   }[status];
 
   return (
