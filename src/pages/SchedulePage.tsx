@@ -1,33 +1,29 @@
 import { useState, useMemo } from "react";
-import { format, addDays, addWeeks, startOfWeek } from "date-fns";
+import { format, addDays, addWeeks } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
-import { ScheduleViewA } from "@/components/schedule/ScheduleViewA";
-import { ScheduleViewB } from "@/components/schedule/ScheduleViewB";
-import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
+import { ScheduleViewC, type StaffDisplayMode } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { Send, Printer, History, Sparkles, AlertTriangle, LayoutGrid, Columns3, List } from "lucide-react";
+import { Send, Printer, Sparkles, AlertTriangle, Circle, Type, UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
 
-type ViewMode = "a" | "b" | "c";
-
-const VIEW_OPTIONS: { id: ViewMode; label: string; desc: string; icon: typeof LayoutGrid }[] = [
-  { id: "a", label: "A", desc: "Week detail + overview strip", icon: Columns3 },
-  { id: "b", label: "B", desc: "Compact grid + detail panel", icon: LayoutGrid },
-  { id: "c", label: "C", desc: "Scrollable full calendar", icon: List },
+const DISPLAY_OPTIONS: { id: StaffDisplayMode; label: string; icon: typeof Circle }[] = [
+  { id: "initials", label: "Initials", icon: UserCircle },
+  { id: "dots", label: "Dots", icon: Circle },
+  { id: "text", label: "Text only", icon: Type },
 ];
 
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("b");
+  const [staffDisplay, setStaffDisplay] = useState<StaffDisplayMode>("dots");
 
   const issueCount = useMemo(() => {
     return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
@@ -108,57 +104,37 @@ export default function SchedulePage() {
               )}
             </div>
 
-            {/* View toggle */}
+            {/* Staff display toggle */}
             <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-              {VIEW_OPTIONS.map((v) => (
+              {DISPLAY_OPTIONS.map((d) => (
                 <button
-                  key={v.id}
-                  onClick={() => setViewMode(v.id)}
-                  title={v.desc}
+                  key={d.id}
+                  onClick={() => setStaffDisplay(d.id)}
                   className={cn(
                     "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                    viewMode === v.id
+                    staffDisplay === d.id
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <v.icon className="h-3.5 w-3.5" />
-                  {v.desc}
+                  <d.icon className="h-3.5 w-3.5" />
+                  {d.label}
                 </button>
               ))}
             </div>
           </div>
         </motion.div>
 
-        {/* View Content */}
+        {/* Grid */}
         <div className="flex-1 overflow-auto p-5">
-          {viewMode === "a" && (
-            <ScheduleViewA
-              slots={slots}
-              shiftView={shiftView}
-              cycleStart={CYCLE_START}
-              totalWeeks={TOTAL_WEEKS}
-              onClickSlot={setEditingSlot}
-            />
-          )}
-          {viewMode === "b" && (
-            <ScheduleViewB
-              slots={slots}
-              shiftView={shiftView}
-              cycleStart={CYCLE_START}
-              totalWeeks={TOTAL_WEEKS}
-              onClickSlot={setEditingSlot}
-            />
-          )}
-          {viewMode === "c" && (
-            <ScheduleViewC
-              slots={slots}
-              shiftView={shiftView}
-              cycleStart={CYCLE_START}
-              totalWeeks={TOTAL_WEEKS}
-              onClickSlot={setEditingSlot}
-            />
-          )}
+          <ScheduleViewC
+            slots={slots}
+            shiftView={shiftView}
+            cycleStart={CYCLE_START}
+            totalWeeks={TOTAL_WEEKS}
+            staffDisplay={staffDisplay}
+            onClickSlot={setEditingSlot}
+          />
         </div>
       </div>
 
