@@ -162,7 +162,7 @@ export function AssignmentStatusPopover({
         </div>
 
         {/* Replace lead section */}
-        {showReplaceLead && (
+        {needsReplacement && (
           <div className="mt-2 pt-2 border-t border-border/50">
             <div className="flex items-center gap-1.5 px-2 pb-1.5">
               <Shield className="h-3 w-3 text-primary/60" />
