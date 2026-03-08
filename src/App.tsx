@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScheduleProvider } from "@/context/ScheduleContext";
 import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
+import TherapistSchedulePage from "./pages/TherapistSchedulePage";
 import SchedulePage from "./pages/SchedulePage";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import TherapistAvailabilityPage from "./pages/TherapistAvailabilityPage";
