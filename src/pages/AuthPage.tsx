@@ -4,44 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarDays, Loader2, Shield, Clock, Users, ArrowLeftRight } from "lucide-react";
+import { CalendarDays, Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-
-const floatingCards = [
-  {
-    icon: CalendarDays,
-    title: "Schedule",
-    detail: "View & manage weekly shifts",
-    color: "bg-sidebar-accent",
-    position: "top-[20%] left-[10%]",
-    delay: 0.6,
-  },
-  {
-    icon: ArrowLeftRight,
-    title: "Swaps",
-    detail: "Request & approve trades",
-    color: "bg-sidebar-ring/20",
-    position: "top-[20%] right-[10%]",
-    delay: 0.8,
-  },
-  {
-    icon: Users,
-    title: "Team",
-    detail: "See who's on today",
-    color: "bg-sidebar-accent",
-    position: "bottom-[20%] left-[10%]",
-    delay: 1.0,
-  },
-  {
-    icon: Clock,
-    title: "Availability",
-    detail: "Mark the days you can work",
-    color: "bg-sidebar-ring/20",
-    position: "bottom-[20%] right-[10%]",
-    delay: 1.2,
-  },
-];
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -85,18 +50,23 @@ export default function AuthPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Left panel — immersive branding */}
-      <div className="hidden lg:flex lg:w-[55%] bg-sidebar relative overflow-hidden flex-col justify-between p-14">
-        {/* Layered background shapes */}
-        <div className="absolute inset-0">
-          <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sidebar-accent/40 to-transparent blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-gradient-to-tl from-sidebar-ring/15 to-transparent blur-3xl" />
+      {/* Left panel — gradient hero with depth */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden flex-col justify-between p-12"
+        style={{
+          background: `linear-gradient(135deg, hsl(var(--sidebar-background)) 0%, hsl(var(--sidebar-background)) 40%, hsl(187 55% 18%) 100%)`,
+        }}
+      >
+        {/* Layered gradient orbs */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-sidebar-ring/25 to-transparent blur-[100px]" />
+          <div className="absolute top-1/4 right-0 h-[500px] w-[500px] rounded-full bg-gradient-to-bl from-sidebar-accent/30 to-transparent blur-[80px]" />
+          <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-gradient-to-t from-sidebar-ring/20 to-transparent blur-[90px]" />
+          {/* Subtle noise texture via grid */}
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.04]"
             style={{
-              backgroundImage: `linear-gradient(hsl(var(--sidebar-foreground)) 1px, transparent 1px),
-                               linear-gradient(90deg, hsl(var(--sidebar-foreground)) 1px, transparent 1px)`,
-              backgroundSize: "48px 48px",
+              backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--sidebar-foreground)) 0.5px, transparent 0)`,
+              backgroundSize: "24px 24px",
             }}
           />
         </div>
@@ -108,39 +78,78 @@ export default function AuthPage() {
           transition={{ duration: 0.5 }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sidebar-accent shadow-lg shadow-sidebar-accent/30">
-            <CalendarDays className="h-5 w-5 text-sidebar-accent-foreground" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/[0.1] shadow-lg">
+            <CalendarDays className="h-5 w-5 text-sidebar-primary" />
           </div>
           <span className="font-heading text-xl font-bold text-sidebar-primary tracking-tight">
             Teamwise
           </span>
         </motion.div>
 
-        {/* Floating feature cards */}
-        <div className="relative z-10 flex-1 my-6">
-          <div className="relative h-full">
-            {floatingCards.map((card) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 24, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.6,
-                  delay: card.delay,
-                  ease: [0.21, 0.47, 0.32, 0.98],
-                }}
-                className={`absolute ${card.position} ${card.color} backdrop-blur-sm rounded-xl px-5 py-4 shadow-xl shadow-black/10 border border-white/[0.06] max-w-[200px]`}
-              >
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <card.icon className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
-                  <span className="text-xs font-semibold text-sidebar-accent-foreground uppercase tracking-wide">
-                    {card.title}
-                  </span>
+        {/* Center — glassmorphic card */}
+        <div className="relative z-10 flex-1 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="w-full max-w-sm"
+          >
+            {/* Glow behind card */}
+            <div className="absolute inset-0 -m-8 rounded-3xl bg-sidebar-ring/10 blur-3xl" />
+            
+            <div className="relative bg-white/[0.07] backdrop-blur-xl rounded-2xl border border-white/[0.12] shadow-2xl shadow-black/20 p-6">
+              {/* Mini schedule header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-sidebar-ring animate-pulse" />
+                  <span className="text-xs font-semibold text-sidebar-primary/80 uppercase tracking-wider">Day Shift · This Week</span>
                 </div>
-                <p className="text-sm text-sidebar-primary/80 font-medium">{card.detail}</p>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+
+              {/* Mock 7-day row */}
+              <div className="grid grid-cols-7 gap-1.5 mb-4">
+                {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                  <div key={i} className="text-center text-[9px] font-semibold text-sidebar-primary/40 uppercase">{d}</div>
+                ))}
+                {[
+                  { n: 9, ok: true },
+                  { n: 10, ok: true },
+                  { n: 11, ok: true },
+                  { n: 12, ok: false },
+                  { n: 13, ok: true },
+                  { n: 14, ok: true },
+                  { n: 15, ok: true },
+                ].map((cell) => (
+                  <div
+                    key={cell.n}
+                    className={`rounded-md py-2 text-center text-[11px] font-bold transition-all ${
+                      cell.ok
+                        ? "bg-sidebar-ring/15 text-sidebar-ring border border-sidebar-ring/20"
+                        : "bg-white/[0.04] text-sidebar-primary/30 border border-white/[0.06]"
+                    }`}
+                  >
+                    {cell.n}
+                  </div>
+                ))}
+              </div>
+
+              {/* Coverage bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-sidebar-primary/60">Coverage</span>
+                  <span className="text-[11px] font-bold text-sidebar-ring">6/7 days</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "86%" }}
+                    transition={{ duration: 1.2, delay: 0.8, ease: "easeOut" }}
+                    className="h-full rounded-full bg-gradient-to-r from-sidebar-ring to-sidebar-accent"
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Headline */}
@@ -150,11 +159,11 @@ export default function AuthPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h1 className="text-5xl font-bold leading-[1.1] text-sidebar-primary mb-3 tracking-tight">
+            <h1 className="font-heading text-5xl font-bold leading-[1.1] text-sidebar-primary mb-3 tracking-tight">
               Your team,<br />
               <span className="text-sidebar-ring">organized.</span>
             </h1>
-            <p className="text-sidebar-muted text-base max-w-md leading-relaxed">
+            <p className="text-sidebar-primary/50 text-base max-w-md leading-relaxed">
               Everything you need to manage schedules, availability, and shift changes — all in one place.
             </p>
           </motion.div>
@@ -190,7 +199,7 @@ export default function AuthPage() {
               transition={{ duration: 0.25 }}
             >
               <div className="mb-8">
-                <h2 className="text-3xl font-bold text-foreground tracking-tight">
+                <h2 className="font-heading text-3xl font-bold text-foreground tracking-tight">
                   {isLogin ? "Welcome back" : "Get started"}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
