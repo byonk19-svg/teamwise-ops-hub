@@ -130,6 +130,12 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                         dimmed && "opacity-25 hover:opacity-60"
                       )}
                     >
+                      {/* Swap indicator */}
+                      {swapped && (
+                        <div className="absolute top-1 right-1 flex items-center justify-center h-4 w-4 rounded-full bg-accent/15 border border-accent/25" title="Modified by swap">
+                          <ArrowLeftRight className="h-2.5 w-2.5 text-accent-foreground" />
+                        </div>
+                      )}
                       {/* Date header */}
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-baseline gap-1">
