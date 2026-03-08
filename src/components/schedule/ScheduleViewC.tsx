@@ -207,7 +207,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
 
                       {/* Staff */}
                       {staff.length > 0 && (
-                        <div className="space-y-0.5">
+                        <div className="space-y-1 mt-0.5">
                           {staff.map((t) => {
                             const assignment = slot.assignments.find(a => a.therapistId === t.id);
                             const assignmentStatus: AssignmentStatus = assignment?.status ?? "active";
