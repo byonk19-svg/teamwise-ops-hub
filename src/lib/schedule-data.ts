@@ -167,7 +167,7 @@ export function generateSchedule(startDate: Date, weeks: number = 6): ShiftSlot[
       type: "night",
       assignments: nightAssignments,
       minStaff: minNight,
-      maxStaff: isSaturday ? 2 : 4,
+      maxStaff: 5,
       needsLead: true,
     });
   }
