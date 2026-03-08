@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScheduleProvider } from "@/context/ScheduleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
 import TherapistSchedulePage from "./pages/TherapistSchedulePage";
