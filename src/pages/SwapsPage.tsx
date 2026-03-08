@@ -173,12 +173,35 @@ export default function ManagerSwapsPage() {
   );
 
   function handleApprove(swapId: string) {
+    const swap = swaps.find((s) => s.id === swapId);
+    if (!swap) return;
+
+    // Apply primary shift: requester leaves, claimer joins
+    if (swap.claimedById) {
+      applySwap({
+        shiftDate: swap.shiftDate,
+        shiftType: swap.shiftType,
+        removedId: swap.requesterId,
+        addedId: swap.claimedById,
+      });
+    }
+
+    // Apply trade-return shift: claimer leaves, requester joins
+    if (swap.mode === "trade" && swap.tradeShiftDate && swap.tradeShiftType && swap.claimedById) {
+      applySwap({
+        shiftDate: swap.tradeShiftDate,
+        shiftType: swap.tradeShiftType,
+        removedId: swap.claimedById,
+        addedId: swap.requesterId,
+      });
+    }
+
     setSwaps((prev) =>
       prev.map((s) =>
         s.id === swapId ? { ...s, status: "approved" as const } : s
       )
     );
-    toast.success("Swap approved!");
+    toast.success("Swap approved — schedule updated!");
   }
 
   function handleReject(swapId: string) {
