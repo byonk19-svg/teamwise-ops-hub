@@ -16,19 +16,12 @@ interface EditShiftDialogProps {
 }
 
 export function EditShiftDialog({ slot, allSlots = [], open, onOpenChange, onUpdate }: EditShiftDialogProps) {
-  if (!slot) return null;
-
-  const date = parseISO(slot.date);
-  const status = getCoverageStatus(slot);
-  const assignedIds = new Set(slot.assignments.map((a) => a.therapistId));
-  const leads = THERAPISTS.filter((t) => t.role === "lead");
-  const staff = THERAPISTS.filter((t) => t.role === "staff");
-
-  // Calculate weekly shift counts and same-day conflicts
-  const weekStart = startOfWeek(date, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(date, { weekStartsOn: 0 });
-
   const therapistMeta = useMemo(() => {
+    if (!slot) return {};
+    const date = parseISO(slot.date);
+    const weekStart = startOfWeek(date, { weekStartsOn: 0 });
+    const weekEnd = endOfWeek(date, { weekStartsOn: 0 });
+    const assignedIds = new Set(slot.assignments.map((a) => a.therapistId));
     const meta: Record<string, { weekShifts: number; sameDayConflict: boolean }> = {};
 
     for (const t of THERAPISTS) {
