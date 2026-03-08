@@ -143,6 +143,22 @@ export function AssignmentStatusPopover({
               </button>
             );
           })}
+
+          {/* Reset option when not active */}
+          {effectiveStatus !== "active" && !needsReplacement && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setAssignmentStatus(slotId, therapistId, "active");
+                setPendingStatus(null);
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-muted/60 transition-colors text-left mt-1 border-t border-border/40 pt-2"
+            >
+              <Undo2 className="h-3 w-3" />
+              <span>Reset to Active</span>
+            </button>
+          )}
         </div>
 
         {/* Replace lead section */}
