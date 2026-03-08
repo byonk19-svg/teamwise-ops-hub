@@ -158,6 +158,26 @@ export function TherapistDetailDialog({ therapist, certifications, open, onOpenC
               </div>
             </div>
 
+            {/* Firm constraint toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Firm Constraint</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Auto-draft will not schedule on unavailable days</p>
+              </div>
+              <button
+                onClick={() => setLocalPrefs({ ...currentPrefs, firmUnavailable: !currentPrefs.firmUnavailable })}
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors",
+                  currentPrefs.firmUnavailable ? "bg-primary border-primary" : "bg-muted border-border"
+                )}
+              >
+                <span className={cn(
+                  "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-sm transition-transform",
+                  currentPrefs.firmUnavailable ? "translate-x-4" : "translate-x-0"
+                )} />
+              </button>
+            </div>
+
             {/* Weekend preference */}
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Weekend Availability</p>
