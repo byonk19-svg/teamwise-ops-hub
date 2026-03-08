@@ -3,6 +3,7 @@ import { format, addDays, addWeeks } from "date-fns";
 import { AppLayout } from "@/components/AppLayout";
 import { ScheduleViewC } from "@/components/schedule/ScheduleViewC";
 import { EditShiftDialog } from "@/components/schedule/EditShiftDialog";
+import { AutoDraftDialog } from "@/components/schedule/AutoDraftDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ShiftSlot, getCoverageStatus } from "@/lib/schedule-data";
@@ -25,6 +26,7 @@ export default function SchedulePage() {
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
   const [issuesOnly, setIssuesOnly] = useState(false);
   const undoStack = useRef<HistoryEntry[]>([]);
+  const [autoDraftOpen, setAutoDraftOpen] = useState(false);
 
   const issueCount = useMemo(() => {
     return slots.filter((s) => s.type === shiftView && getCoverageStatus(s) !== "ok").length;
@@ -89,7 +91,7 @@ export default function SchedulePage() {
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <Printer className="h-3.5 w-3.5" /> Print
               </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setAutoDraftOpen(true)}>
                 <Sparkles className="h-3.5 w-3.5" /> Auto-draft
               </Button>
               <Button size="sm" className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90">
@@ -162,6 +164,30 @@ export default function SchedulePage() {
         open={!!editingSlot}
         onOpenChange={(open) => !open && setEditingSlot(null)}
         onUpdate={handleUpdate}
+      />
+
+      <AutoDraftDialog
+        open={autoDraftOpen}
+        onOpenChange={setAutoDraftOpen}
+        currentSlots={slots}
+        onApply={(newSlots) => {
+          undoStack.current.push({ slots, description: "Auto-draft schedule" });
+          setSlots(newSlots);
+          toast.success("Auto-draft applied", {
+            description: "Schedule generated respecting all preferences",
+            action: {
+              label: "Undo",
+              onClick: () => {
+                const entry = undoStack.current.pop();
+                if (entry) {
+                  setSlots(entry.slots);
+                  toast.success("Auto-draft undone");
+                }
+              },
+            },
+            duration: 8000,
+          });
+        }}
       />
     </AppLayout>
   );
