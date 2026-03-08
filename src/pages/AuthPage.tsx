@@ -23,7 +23,7 @@ const stagger = {
   parent: { animate: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } },
   child: {
     initial: { opacity: 0, y: 14 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] } },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] as const } },
   },
 };
 
