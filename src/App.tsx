@@ -9,6 +9,7 @@ import SchedulePage from "./pages/SchedulePage";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import TherapistAvailabilityPage from "./pages/TherapistAvailabilityPage";
 import SwapsPage from "./pages/SwapsPage";
+import TherapistSwapsPage from "./pages/TherapistSwapsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
