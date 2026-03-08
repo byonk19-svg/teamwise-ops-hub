@@ -310,24 +310,6 @@ export default function AuthPage() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-6">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider font-medium">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
-            {/* SSO placeholder */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 rounded-lg text-sm font-medium border-border hover:bg-muted/50 transition-all"
-              disabled
-            >
-              <Shield className="h-4 w-4 mr-2 text-muted-foreground" />
-              Sign in with SSO
-              <span className="ml-auto text-[10px] text-muted-foreground/50 uppercase tracking-wider">Soon</span>
-            </Button>
 
             {/* Toggle */}
             <p className="mt-6 text-center text-sm text-muted-foreground">
