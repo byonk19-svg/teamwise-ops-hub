@@ -29,6 +29,7 @@ const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
 
 interface CoverageImpact {
+  label: string; // e.g. "Wed, Mar 25 · Day"
   currentStaff: number;
   afterStaff: number;
   minStaff: number;
@@ -40,37 +41,49 @@ interface CoverageImpact {
   claimerIsLead: boolean;
 }
 
-function computeImpact(
+interface SwapImpact {
+  primary: CoverageImpact | null;    // The requester's shift
+  tradeReturn: CoverageImpact | null; // The trade-back shift (only for mutual trades)
+  overallSeverity: "ok" | "warning" | "error";
+}
+
+function computeSingleImpact(
   slots: ShiftSlot[],
-  swap: ShiftSwap
+  shiftDate: string,
+  shiftType: "day" | "night",
+  removedId: string,
+  addedId?: string,
+  label?: string
 ): CoverageImpact | null {
-  const slotId = `${swap.shiftDate}-${swap.shiftType}`;
+  const slotId = `${shiftDate}-${shiftType}`;
   const slot = slots.find((s) => s.id === slotId);
   if (!slot) return null;
 
-  const requester = getTherapist(swap.requesterId);
-  const claimer = swap.claimedById ? getTherapist(swap.claimedById) : null;
+  const removed = getTherapist(removedId);
+  const added = addedId ? getTherapist(addedId) : null;
 
   const currentStaff = slot.assignments.length;
   const hasLeadBefore = slot.assignments.some(
     (a) => getTherapist(a.therapistId)?.role === "lead"
   );
 
-  // After swap: remove requester, add claimer
   const afterAssignments = slot.assignments
-    .filter((a) => a.therapistId !== swap.requesterId)
-    .concat(claimer ? [{ therapistId: swap.claimedById! }] : []);
+    .filter((a) => a.therapistId !== removedId)
+    .concat(added ? [{ therapistId: addedId! }] : []);
 
   const afterStaff = afterAssignments.length;
   const hasLeadAfter = afterAssignments.some(
     (a) => getTherapist(a.therapistId)?.role === "lead"
   );
 
-  const claimerAlreadyScheduled = claimer
-    ? slot.assignments.some((a) => a.therapistId === swap.claimedById)
+  const claimerAlreadyScheduled = added
+    ? slot.assignments.some((a) => a.therapistId === addedId)
     : false;
 
+  const shiftDateParsed = parseISO(shiftDate);
+
   return {
+    label: label || `${format(shiftDateParsed, "EEE, MMM d")} · ${shiftType === "day" ? "Day" : "Night"}`,
     currentStaff,
     afterStaff,
     minStaff: slot.minStaff,
@@ -78,9 +91,55 @@ function computeImpact(
     hasLeadAfter,
     needsLead: slot.needsLead,
     claimerAlreadyScheduled,
-    requesterIsLead: requester?.role === "lead" || false,
-    claimerIsLead: claimer?.role === "lead" || false,
+    requesterIsLead: removed?.role === "lead" || false,
+    claimerIsLead: added?.role === "lead" || false,
   };
+}
+
+function computeSwapImpact(
+  slots: ShiftSlot[],
+  swap: ShiftSwap
+): SwapImpact {
+  // Primary shift: requester leaves, claimer joins
+  const primary = computeSingleImpact(
+    slots,
+    swap.shiftDate,
+    swap.shiftType,
+    swap.requesterId,
+    swap.claimedById
+  );
+
+  // Trade-return shift (mutual trade only): claimer leaves, requester joins
+  let tradeReturn: CoverageImpact | null = null;
+  if (swap.mode === "trade" && swap.tradeShiftDate && swap.tradeShiftType && swap.claimedById) {
+    tradeReturn = computeSingleImpact(
+      slots,
+      swap.tradeShiftDate,
+      swap.tradeShiftType,
+      swap.claimedById,
+      swap.requesterId
+    );
+  }
+
+  const severities = [primary, tradeReturn]
+    .filter(Boolean)
+    .map((impact) => getImpactSeverity(impact!));
+
+  const overallSeverity = severities.includes("error")
+    ? "error"
+    : severities.includes("warning")
+    ? "warning"
+    : "ok";
+
+  return { primary, tradeReturn, overallSeverity };
+}
+
+function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
+  if (impact.afterStaff < impact.minStaff) return "error";
+  if (impact.needsLead && impact.hasLeadBefore && !impact.hasLeadAfter) return "error";
+  if (impact.claimerAlreadyScheduled) return "warning";
+  if (impact.requesterIsLead && !impact.claimerIsLead && impact.needsLead && !impact.hasLeadAfter) return "warning";
+  return "ok";
 }
 
 export default function ManagerSwapsPage() {
