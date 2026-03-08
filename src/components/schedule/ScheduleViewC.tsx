@@ -5,7 +5,7 @@ import { useSchedule } from "@/context/ScheduleContext";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { AssignmentStatusPopover } from "./AssignmentStatusPopover";
+import { AssignmentStatusPopover, StatusPill } from "./AssignmentStatusPopover";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -176,28 +176,25 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                       {lead ? (() => {
                         const leadAssignment = slot.assignments.find(a => a.therapistId === lead.id);
                         const leadStatus: AssignmentStatus = leadAssignment?.status ?? "active";
-                        const statusMeta = ASSIGNMENT_STATUSES.find(s => s.value === leadStatus);
                         return (
                           <div className={cn(
                             "rounded-md px-2 py-1 mb-1.5 border",
                             leadStatus === "active" ? "bg-primary/8 border-primary/10" :
-                            leadStatus === "cancelled" || leadStatus === "call-in" ? "bg-destructive/8 border-destructive/10" :
-                            "bg-warning/8 border-warning/10"
+                            leadStatus === "cancelled" || leadStatus === "call-in" ? "bg-destructive/6 border-destructive/10" :
+                            "bg-warning/6 border-warning/10"
                           )}>
                             <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
                             <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead>
-                              <span className={cn(
-                                "text-[11px] font-semibold mt-0.5 inline-flex items-center gap-1",
-                                leadStatus === "active" ? "text-primary" :
-                                leadStatus === "cancelled" || leadStatus === "call-in" ? "text-destructive line-through" :
-                                "text-warning-foreground"
-                              )}>
-                                {lead.name}
-                                {leadStatus !== "active" && (
-                                  <span className={cn("text-[8px] font-medium no-underline", statusMeta?.color)}>
-                                    {statusMeta?.label}
-                                  </span>
-                                )}
+                              <span className="inline-flex flex-col mt-0.5 gap-0.5">
+                                <span className={cn(
+                                  "text-[11px] font-semibold leading-none",
+                                  leadStatus === "active" ? "text-primary" :
+                                  leadStatus === "cancelled" || leadStatus === "call-in" ? "text-destructive/70 line-through decoration-destructive/40" :
+                                  "text-warning-foreground"
+                                )}>
+                                  {lead.name}
+                                </span>
+                                <StatusPill status={leadStatus} />
                               </span>
                             </AssignmentStatusPopover>
                           </div>
@@ -210,25 +207,22 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
 
                       {/* Staff */}
                       {staff.length > 0 && (
-                        <div className="space-y-0">
+                        <div className="space-y-0.5">
                           {staff.map((t) => {
                             const assignment = slot.assignments.find(a => a.therapistId === t.id);
                             const assignmentStatus: AssignmentStatus = assignment?.status ?? "active";
-                            const statusMeta = ASSIGNMENT_STATUSES.find(s => s.value === assignmentStatus);
                             return (
                               <AssignmentStatusPopover key={t.id} slotId={slot.id} therapistId={t.id} therapistName={t.name} currentStatus={assignmentStatus}>
-                                <span className={cn(
-                                  "text-[10px] leading-relaxed inline-flex items-center gap-1",
-                                  assignmentStatus === "active" ? "text-foreground/60" :
-                                  assignmentStatus === "cancelled" || assignmentStatus === "call-in" ? "text-destructive/60 line-through" :
-                                  "text-warning-foreground/70"
-                                )}>
-                                  {t.name}
-                                  {assignmentStatus !== "active" && (
-                                    <span className={cn("text-[8px] font-medium no-underline", statusMeta?.color)}>
-                                      {statusMeta?.label}
-                                    </span>
-                                  )}
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className={cn(
+                                    "text-[10px] leading-none",
+                                    assignmentStatus === "active" ? "text-foreground/60" :
+                                    assignmentStatus === "cancelled" || assignmentStatus === "call-in" ? "text-destructive/50 line-through decoration-destructive/30" :
+                                    "text-warning-foreground/70"
+                                  )}>
+                                    {t.name}
+                                  </span>
+                                  <StatusPill status={assignmentStatus} />
                                 </span>
                               </AssignmentStatusPopover>
                             );
