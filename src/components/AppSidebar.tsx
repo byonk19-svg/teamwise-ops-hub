@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 const managerNav = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/schedule", icon: CalendarDays, label: "Schedule" },
   { to: "/availability", icon: CalendarRange, label: "Availability" },
   { to: "/swaps", icon: ArrowLeftRight, label: "Shift Swaps" },
