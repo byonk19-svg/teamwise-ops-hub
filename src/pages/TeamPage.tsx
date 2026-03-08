@@ -9,7 +9,7 @@ import { TherapistDetailDialog } from "@/components/team/TherapistDetailDialog";
 
 
 function TherapistCard({ therapist, onClick }: { therapist: Therapist; onClick: () => void }) {
-  const certs = CERTIFICATIONS[therapist.id] ?? [];
+  const isLead = therapist.role === "lead";
   const isLead = therapist.role === "lead";
 
   return (
