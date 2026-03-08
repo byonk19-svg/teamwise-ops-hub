@@ -204,6 +204,26 @@ export default function ManagerSwapsPage() {
             </section>
           )}
 
+          {/* Awaiting Peer Response */}
+          {pendingPeer.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Awaiting Peer Response
+                </h2>
+                <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                  {pendingPeer.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {pendingPeer.map((swap, i) => (
+                  <ManagerSwapCard key={swap.id} swap={swap} index={i} impact={computeImpact(schedule, swap)} />
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Open Swaps */}
           {openSwaps.length > 0 && (
             <section>
