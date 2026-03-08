@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { AssignmentStatus, ASSIGNMENT_STATUSES, THERAPISTS, Therapist, getTherapist } from "@/lib/schedule-data";
 import { useSchedule } from "@/context/ScheduleContext";
 import { cn } from "@/lib/utils";
-import { Check, Clock, PhoneOff, PhoneIncoming, PhoneCall, CircleCheck, Shield, ArrowRight } from "lucide-react";
+import { Check, Clock, PhoneOff, PhoneIncoming, PhoneCall, CircleCheck, Shield, ArrowRight, Undo2 } from "lucide-react";
 
 const STATUS_ICONS: Record<AssignmentStatus, React.ReactNode> = {
   active: <CircleCheck className="h-3.5 w-3.5" />,
@@ -47,7 +47,7 @@ export function AssignmentStatusPopover({
 
   // The effective status shown (pending or current)
   const effectiveStatus = pendingStatus ?? currentStatus;
-  const showReplaceLead = isLead && (effectiveStatus === "cancelled" || effectiveStatus === "call-in");
+  const needsReplacement = isLead && (effectiveStatus === "cancelled" || effectiveStatus === "call-in" || effectiveStatus === "on-call");
 
   // Available replacement leads: lead-role therapists not already on this shift (or cancelled/call-in)
   const replacementLeads = THERAPISTS.filter(
@@ -55,12 +55,11 @@ export function AssignmentStatusPopover({
   );
 
   const handleStatusClick = (status: AssignmentStatus) => {
-    if (isLead && (status === "cancelled" || status === "call-in")) {
+    setAssignmentStatus(slotId, therapistId, status);
+    if (isLead && (status === "cancelled" || status === "call-in" || status === "on-call")) {
       // Don't close yet — show replacement picker
-      setAssignmentStatus(slotId, therapistId, status);
       setPendingStatus(status);
     } else {
-      setAssignmentStatus(slotId, therapistId, status);
       setPendingStatus(null);
       setOpen(false);
     }
@@ -102,7 +101,7 @@ export function AssignmentStatusPopover({
       <PopoverContent
         side="right"
         align="start"
-        className={cn("p-2 rounded-xl shadow-lg border-border/60", showReplaceLead ? "w-56" : "w-48")}
+        className={cn("p-2 rounded-xl shadow-lg border-border/60", needsReplacement ? "w-56" : "w-48")}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-2 pb-2 mb-1 border-b border-border/50">
@@ -144,10 +143,26 @@ export function AssignmentStatusPopover({
               </button>
             );
           })}
+
+          {/* Reset option when not active */}
+          {effectiveStatus !== "active" && !needsReplacement && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setAssignmentStatus(slotId, therapistId, "active");
+                setPendingStatus(null);
+                setOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-muted/60 transition-colors text-left mt-1 border-t border-border/40 pt-2"
+            >
+              <Undo2 className="h-3 w-3" />
+              <span>Reset to Active</span>
+            </button>
+          )}
         </div>
 
         {/* Replace lead section */}
-        {showReplaceLead && (
+        {needsReplacement && (
           <div className="mt-2 pt-2 border-t border-border/50">
             <div className="flex items-center gap-1.5 px-2 pb-1.5">
               <Shield className="h-3 w-3 text-primary/60" />

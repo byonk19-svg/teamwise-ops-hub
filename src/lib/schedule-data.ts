@@ -49,12 +49,32 @@ export function getTherapist(id: string): Therapist | undefined {
   return THERAPISTS.find((t) => t.id === id);
 }
 
+/** Returns the active lead (prefers non-cancelled/call-in/on-call) */
 export function getLeadAssignment(slot: ShiftSlot): Therapist | undefined {
+  // First pass: find an active lead
+  for (const a of slot.assignments) {
+    const t = getTherapist(a.therapistId);
+    if (t?.role === "lead" && (!a.status || a.status === "active" || a.status === "leave-early")) return t;
+  }
+  // Fallback: any lead
   for (const a of slot.assignments) {
     const t = getTherapist(a.therapistId);
     if (t?.role === "lead") return t;
   }
   return undefined;
+}
+
+/** Returns leads that are inactive (cancelled, call-in, on-call) */
+export function getInactiveLeads(slot: ShiftSlot): { therapist: Therapist; status: AssignmentStatus }[] {
+  return slot.assignments
+    .filter((a) => {
+      const t = getTherapist(a.therapistId);
+      return t?.role === "lead" && a.status && (a.status === "cancelled" || a.status === "call-in" || a.status === "on-call");
+    })
+    .map((a) => ({
+      therapist: getTherapist(a.therapistId)!,
+      status: a.status!,
+    }));
 }
 
 export function getStaffAssignments(slot: ShiftSlot): Therapist[] {
