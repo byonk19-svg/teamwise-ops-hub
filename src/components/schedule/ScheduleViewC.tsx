@@ -1,6 +1,8 @@
 import { useMemo, useRef, useCallback, useEffect } from "react";
 import { format, parseISO, isFirstDayOfMonth, isToday, isWeekend } from "date-fns";
 import { ShiftSlot, getCoverageStatus, getLeadAssignment, getStaffAssignments } from "@/lib/schedule-data";
+import { useSchedule } from "@/context/ScheduleContext";
+import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
