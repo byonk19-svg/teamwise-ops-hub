@@ -279,7 +279,7 @@ export default function AuthPage() {
           }}
         />
 
-        <div className="flex flex-1 items-center justify-center px-8 sm:px-12">
+        <div className="flex flex-1 items-center justify-center px-8 sm:px-12 py-10">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
