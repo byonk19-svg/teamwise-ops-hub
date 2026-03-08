@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { ShiftSlot, generateSchedule, getTherapist } from "@/lib/schedule-data";
+import { ShiftSlot, generateSchedule, getTherapist, AssignmentStatus } from "@/lib/schedule-data";
 
 const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
@@ -17,6 +17,7 @@ interface ScheduleContextValue {
   swappedSlotIds: Set<string>;
   swapDetails: Map<string, SwapDetail>;
   setSlots: React.Dispatch<React.SetStateAction<ShiftSlot[]>>;
+  setAssignmentStatus: (slotId: string, therapistId: string, status: AssignmentStatus) => void;
   applySwap: (params: {
     shiftDate: string;
     shiftType: "day" | "night";
@@ -76,9 +77,26 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const setAssignmentStatus = useCallback(
+    (slotId: string, therapistId: string, status: AssignmentStatus) => {
+      setSlots((prev) =>
+        prev.map((slot) => {
+          if (slot.id !== slotId) return slot;
+          return {
+            ...slot,
+            assignments: slot.assignments.map((a) =>
+              a.therapistId === therapistId ? { ...a, status } : a
+            ),
+          };
+        })
+      );
+    },
+    []
+  );
+
   return (
     <ScheduleContext.Provider
-      value={{ slots, cycleStart: CYCLE_START, totalWeeks: TOTAL_WEEKS, swappedSlotIds, swapDetails, setSlots, applySwap }}
+      value={{ slots, cycleStart: CYCLE_START, totalWeeks: TOTAL_WEEKS, swappedSlotIds, swapDetails, setSlots, setAssignmentStatus, applySwap }}
     >
       {children}
     </ScheduleContext.Provider>
