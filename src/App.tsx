@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScheduleProvider } from "@/context/ScheduleContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import ManagerHome from "./pages/ManagerHome";
 import TherapistHome from "./pages/TherapistHome";
@@ -27,8 +28,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<ProtectedRoute><ManagerHome /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><ManagerHome /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
             <Route path="/availability" element={<ProtectedRoute><AvailabilityPage /></ProtectedRoute>} />
             <Route path="/swaps" element={<ProtectedRoute><SwapsPage /></ProtectedRoute>} />
