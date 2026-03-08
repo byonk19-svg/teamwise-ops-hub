@@ -16,7 +16,6 @@ const managerNav = [
   { to: "/schedule", icon: CalendarDays, label: "Schedule" },
   { to: "/availability", icon: CalendarRange, label: "Availability" },
   { to: "/swaps", icon: ArrowLeftRight, label: "Shift Swaps" },
-  { to: "/coverage", icon: Shield, label: "Coverage" },
   { to: "/team", icon: Users, label: "Team" },
 ];
 
