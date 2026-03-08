@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { getTherapist, ShiftSlot, generateSchedule, getCoverageStatus } from "@/lib/schedule-data";
-import { ShiftSwap, generateSwaps, getSwapStats } from "@/lib/swap-data";
+import { ShiftSwap, SwapMode, generateSwaps, getSwapStats, getSwapModeLabel } from "@/lib/swap-data";
 import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
