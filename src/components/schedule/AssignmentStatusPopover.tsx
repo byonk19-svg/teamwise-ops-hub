@@ -101,7 +101,7 @@ export function AssignmentStatusPopover({
       <PopoverContent
         side="right"
         align="start"
-        className={cn("p-2 rounded-xl shadow-lg border-border/60", showReplaceLead ? "w-56" : "w-48")}
+        className={cn("p-2 rounded-xl shadow-lg border-border/60", needsReplacement ? "w-56" : "w-48")}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-2 pb-2 mb-1 border-b border-border/50">
