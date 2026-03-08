@@ -169,7 +169,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                           "text-[10px] font-bold font-heading tabular-nums leading-none",
                           status === "ok" ? "text-success" : status === "warning" ? "text-warning-foreground" : "text-destructive"
                         )}>
-                          {slot.assignments.length}/{slot.minStaff}
+                          {getActiveAssignmentCount(slot)}/{slot.minStaff}
                         </span>
                       </div>
 
