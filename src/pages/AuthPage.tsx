@@ -275,9 +275,9 @@ export default function AuthPage() {
             </div>
 
             {/* Form card */}
-            <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-8 shadow-sm">
+            <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-7 pb-6 shadow-sm">
               {/* Eyebrow */}
-              <p className="hidden lg:block text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 mb-3">
+              <p className="hidden lg:block text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 mb-2.5">
                 Team Scheduling Hub
               </p>
 
@@ -285,14 +285,14 @@ export default function AuthPage() {
               <h2 className="font-heading text-[1.6rem] font-bold text-foreground tracking-tight leading-snug">
                 {isLogin ? "Access your Teamwise workspace" : "Create your employee account"}
               </h2>
-              <p className="mt-2 text-[14px] text-muted-foreground leading-relaxed mb-7">
+              <p className="mt-1.5 text-[14px] text-muted-foreground leading-relaxed mb-6">
                 {isLogin
                   ? "Sign in to view your schedule, manage availability, and coordinate with your team."
                   : "Set up your account to access schedules, shifts, and team coordination tools."}
               </p>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5">
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-[13px] font-medium text-foreground/70">
                     Email address
@@ -325,7 +325,7 @@ export default function AuthPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 rounded-lg text-sm font-semibold gap-2 shadow-md hover:shadow-lg hover:brightness-110 transition-all mt-2"
+                  className="w-full h-11 rounded-lg text-sm font-semibold gap-2 shadow-md hover:shadow-lg hover:brightness-110 transition-all mt-1"
                   disabled={loading}
                 >
                   {loading ? (
@@ -338,24 +338,24 @@ export default function AuthPage() {
                   )}
                 </Button>
               </form>
-            </div>
 
-            {/* Toggle — outside card */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                {isLogin ? "Need access?" : "Already have an account?"}{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="font-semibold text-primary hover:text-primary/80 transition-colors"
-                >
-                  {isLogin ? "Create your employee account" : "Sign in instead"}
-                </button>
-              </p>
+              {/* Toggle — inside card */}
+              <div className="mt-5 pt-4 border-t border-border/40 text-center">
+                <p className="text-[13px] text-muted-foreground">
+                  {isLogin ? "Need access?" : "Already have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                  >
+                    {isLogin ? "Create your employee account" : "Sign in instead"}
+                  </button>
+                </p>
+              </div>
             </div>
 
             {/* Trust signal */}
-            <div className="mt-8 flex items-center justify-center gap-1.5 text-muted-foreground/40">
+            <div className="mt-6 flex items-center justify-center gap-1.5 text-muted-foreground/40">
               <ShieldCheck className="h-3.5 w-3.5" />
               <span className="text-[11px] font-medium">Secured & encrypted</span>
             </div>
