@@ -23,6 +23,7 @@ export default function SchedulePage() {
   const [slots, setSlots] = useState<ShiftSlot[]>(() => generateSchedule(CYCLE_START, TOTAL_WEEKS));
   const [shiftView, setShiftView] = useState<"day" | "night">("day");
   const [editingSlot, setEditingSlot] = useState<ShiftSlot | null>(null);
+  const [issuesOnly, setIssuesOnly] = useState(false);
   const undoStack = useRef<HistoryEntry[]>([]);
 
   const issueCount = useMemo(() => {
