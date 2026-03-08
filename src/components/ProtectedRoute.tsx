@@ -2,8 +2,15 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
+// TODO: Remove this before production
+const DEV_BYPASS_AUTH = true;
+
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
+
+  if (DEV_BYPASS_AUTH) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
