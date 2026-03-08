@@ -173,12 +173,36 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                       </div>
 
                       {/* Lead */}
-                      {lead ? (
-                        <div className="rounded-md bg-primary/8 px-2 py-1 mb-1.5 border border-primary/10">
-                          <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
-                          <p className="text-[11px] font-semibold text-primary mt-0.5">{lead.name}</p>
-                        </div>
-                      ) : slot.assignments.length > 0 ? (
+                      {lead ? (() => {
+                        const leadAssignment = slot.assignments.find(a => a.therapistId === lead.id);
+                        const leadStatus: AssignmentStatus = leadAssignment?.status ?? "active";
+                        const statusMeta = ASSIGNMENT_STATUSES.find(s => s.value === leadStatus);
+                        return (
+                          <div className={cn(
+                            "rounded-md px-2 py-1 mb-1.5 border",
+                            leadStatus === "active" ? "bg-primary/8 border-primary/10" :
+                            leadStatus === "cancelled" || leadStatus === "call-in" ? "bg-destructive/8 border-destructive/10" :
+                            "bg-warning/8 border-warning/10"
+                          )}>
+                            <p className="text-[8px] text-primary/60 leading-none font-medium uppercase tracking-wider">Lead</p>
+                            <AssignmentStatusPopover slotId={slot.id} therapistId={lead.id} therapistName={lead.name} currentStatus={leadStatus} isLead>
+                              <span className={cn(
+                                "text-[11px] font-semibold mt-0.5 inline-flex items-center gap-1",
+                                leadStatus === "active" ? "text-primary" :
+                                leadStatus === "cancelled" || leadStatus === "call-in" ? "text-destructive line-through" :
+                                "text-warning-foreground"
+                              )}>
+                                {lead.name}
+                                {leadStatus !== "active" && (
+                                  <span className={cn("text-[8px] font-medium no-underline", statusMeta?.color)}>
+                                    {statusMeta?.label}
+                                  </span>
+                                )}
+                              </span>
+                            </AssignmentStatusPopover>
+                          </div>
+                        );
+                      })() : slot.assignments.length > 0 ? (
                         <div className="rounded-md bg-destructive/8 px-2 py-1 mb-1.5 border border-destructive/10">
                           <p className="text-[9px] font-medium text-destructive">No lead</p>
                         </div>
@@ -187,9 +211,28 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                       {/* Staff */}
                       {staff.length > 0 && (
                         <div className="space-y-0">
-                          {staff.map((t) => (
-                            <p key={t.id} className="text-[10px] text-foreground/60 leading-relaxed">{t.name}</p>
-                          ))}
+                          {staff.map((t) => {
+                            const assignment = slot.assignments.find(a => a.therapistId === t.id);
+                            const assignmentStatus: AssignmentStatus = assignment?.status ?? "active";
+                            const statusMeta = ASSIGNMENT_STATUSES.find(s => s.value === assignmentStatus);
+                            return (
+                              <AssignmentStatusPopover key={t.id} slotId={slot.id} therapistId={t.id} therapistName={t.name} currentStatus={assignmentStatus}>
+                                <span className={cn(
+                                  "text-[10px] leading-relaxed inline-flex items-center gap-1",
+                                  assignmentStatus === "active" ? "text-foreground/60" :
+                                  assignmentStatus === "cancelled" || assignmentStatus === "call-in" ? "text-destructive/60 line-through" :
+                                  "text-warning-foreground/70"
+                                )}>
+                                  {t.name}
+                                  {assignmentStatus !== "active" && (
+                                    <span className={cn("text-[8px] font-medium no-underline", statusMeta?.color)}>
+                                      {statusMeta?.label}
+                                    </span>
+                                  )}
+                                </span>
+                              </AssignmentStatusPopover>
+                            );
+                          })}
                         </div>
                       )}
 
