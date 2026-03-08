@@ -93,6 +93,10 @@ export default function ManagerSwapsPage() {
     () => swaps.filter((s) => s.status === "claimed"),
     [swaps]
   );
+  const pendingPeer = useMemo(
+    () => swaps.filter((s) => s.status === "pending_peer"),
+    [swaps]
+  );
   const openSwaps = useMemo(
     () => swaps.filter((s) => s.status === "open"),
     [swaps]
