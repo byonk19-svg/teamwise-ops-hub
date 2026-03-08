@@ -99,6 +99,7 @@ export function ScheduleViewC({ slots, shiftView, cycleStart, totalWeeks, issues
                   const monthLabel = isFirstDayOfMonth(date) ? format(date, "MMM") : null;
                   const today = isToday(date);
                   const weekend = isWeekend(date);
+                  const dimmed = issuesOnly && status === "ok";
 
                   return (
                     <button
