@@ -9,7 +9,7 @@ const progressData = [
 
 export function ScheduleProgress() {
   return (
-    <div className="rounded-lg border bg-card p-5">
+    <div className="rounded-lg border bg-card p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-heading font-semibold text-sm">Schedule Completion</h3>
         <div className="text-xs text-muted-foreground">Next 6 weeks</div>
