@@ -292,6 +292,30 @@ export default function ManagerSwapsPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-5 space-y-6">
+          {/* New Swap Requests Section */}
+          {requests.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <ArrowLeftRight className="h-4 w-4 text-primary" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Swap Requests
+                </h2>
+                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  {requests.length}
+                </span>
+              </div>
+              <div className="grid gap-4">
+                {requests.map((request) => (
+                  <SwapRequestCard
+                    key={request.id}
+                    request={request}
+                    isManager={isManager}
+                    onUpdate={refetch}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
           {/* Pending Approval Section */}
           {pendingApproval.length > 0 && (
             <section>

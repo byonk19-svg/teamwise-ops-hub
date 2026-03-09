@@ -129,8 +129,8 @@ export function SwapRequestForm({ children, onSuccess }: SwapRequestFormProps) {
           data: {
             swap_request_id: swapRequest.id,
             requester_id: user.id,
-            requested_date: data.requestedDate,
-            offered_date: data.offeredDate,
+            requested_date: format(data.requestedDate, "yyyy-MM-dd"),
+            offered_date: format(data.offeredDate, "yyyy-MM-dd"),
           },
         }));
 

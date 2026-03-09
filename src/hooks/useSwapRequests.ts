@@ -65,9 +65,7 @@ export function useSwapRequests() {
           : null
       }));
 
-      if (error) throw error;
-
-      setRequests(data || []);
+      setRequests(enrichedData);
     } catch (error) {
       console.error("Error fetching swap requests:", error);
       toast.error("Failed to load swap requests");
