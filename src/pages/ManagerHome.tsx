@@ -167,9 +167,9 @@ export default function ManagerHome() {
           </motion.div>
         </div>
 
-        {/* Schedule Context / Publish Readiness */}
+        {/* Publish Readiness */}
         <motion.div
-          custom={6}
+          custom={7}
           variants={fadeUp}
           initial="hidden"
           animate="show"
