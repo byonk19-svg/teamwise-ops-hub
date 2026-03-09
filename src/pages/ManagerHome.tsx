@@ -54,9 +54,11 @@ export default function ManagerHome() {
               <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight">
                 Good morning, Jamie
               </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Jan 6–Feb 14 cycle needs attention · <span className="font-medium text-destructive">3 coverage gaps</span> · <span className="font-medium text-accent">6 therapists pending availability</span>
-              </p>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-sm text-muted-foreground">Jan 6–Feb 14 cycle needs attention</span>
+                <StatusBadge variant="error" className="text-[11px]">3 coverage gaps</StatusBadge>
+                <StatusBadge variant="pending" className="text-[11px]">6 pending availability</StatusBadge>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="gap-1.5">

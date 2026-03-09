@@ -15,15 +15,15 @@ export function StatsCard({ label, value, sublabel, icon: Icon, variant = "defau
   return (
     <div
       className={cn(
-        "rounded-lg border bg-card p-5 animate-fade-in",
+        "rounded-lg border bg-card px-5 py-4 animate-fade-in",
         className
       )}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
           <p
-            className={cn("text-2xl font-heading font-semibold tracking-tight", {
+            className={cn("text-2xl font-heading font-semibold tracking-tight mt-1", {
               "text-foreground": variant === "default",
               "text-success": variant === "success",
               "text-warning": variant === "warning",
@@ -32,11 +32,11 @@ export function StatsCard({ label, value, sublabel, icon: Icon, variant = "defau
           >
             {value}
           </p>
-          {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
+          {sublabel && <p className="text-xs text-muted-foreground mt-0.5">{sublabel}</p>}
         </div>
         {Icon && (
           <div
-            className={cn("rounded-lg p-2", {
+            className={cn("rounded-lg p-2 flex-shrink-0", {
               "bg-muted": variant === "default",
               "bg-success/10": variant === "success",
               "bg-warning/10": variant === "warning",
