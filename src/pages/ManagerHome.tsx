@@ -54,7 +54,7 @@ export default function ManagerHome() {
                 Good morning, Jamie
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Schedule cycle: Jan 6 – Feb 14 · <span className="font-medium text-accent">Pre-publish</span>
+                Jan 6–Feb 14 cycle needs attention · <span className="font-medium text-destructive">3 coverage gaps</span> · <span className="font-medium text-accent">6 therapists pending availability</span>
               </p>
             </div>
             <div className="flex gap-2">
