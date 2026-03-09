@@ -103,16 +103,16 @@ export default function ManagerHome() {
                 Fix Coverage <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
-            <div className="divide-y">
+            <div className="divide-y divide-border/50">
               {coverageIssues.map((issue, i) => (
-                <div key={i} className="flex items-center justify-between px-5 py-3.5">
-                  <div className="flex items-center gap-3">
+                <div key={i} className="flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3.5">
                     {issue.severity === "error" ? (
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                     ) : (
                       <Clock className="h-4 w-4 text-warning" />
                     )}
-                    <div>
+                    <div className="space-y-0.5">
                       <p className="text-sm font-medium text-foreground">{issue.day} · {issue.shift}</p>
                       <p className="text-xs text-muted-foreground">{issue.issue}</p>
                     </div>
