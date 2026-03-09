@@ -31,6 +31,7 @@ import { SwapRequestCard } from "@/components/swaps/SwapRequestCard";
 import { useSwapRequests } from "@/hooks/useSwapRequests";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 
 interface CoverageImpact {
