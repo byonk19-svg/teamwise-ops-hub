@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
 import { ShiftSlot, generateSchedule, getTherapist, AssignmentStatus } from "@/lib/schedule-data";
+import { useRealtimeSchedule } from "@/hooks/useRealtimeSchedule";
 
 const CYCLE_START = new Date(2026, 2, 22);
 const TOTAL_WEEKS = 6;
@@ -35,6 +36,13 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   );
   const [swappedSlotIds, setSwappedSlotIds] = useState<Set<string>>(new Set());
   const [swapDetails, setSwapDetails] = useState<Map<string, SwapDetail>>(new Map());
+
+  const { logScheduleEvent } = useRealtimeSchedule({
+    onScheduleChange: (event) => {
+      // Refetch slots if needed based on schedule events
+      console.log('Schedule changed:', event);
+    }
+  });
 
   const applySwap = useCallback(
     ({
@@ -74,12 +82,25 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         });
         return next;
       });
+
+      // Log the swap event
+      logScheduleEvent(
+        'swap_approved',
+        shiftDate,
+        shiftType,
+        addedId || removedId,
+        { removedId },
+        { addedId }
+      );
     },
-    []
+    [logScheduleEvent]
   );
 
   const setAssignmentStatus = useCallback(
     (slotId: string, therapistId: string, status: AssignmentStatus) => {
+      const slot = slots.find(s => s.id === slotId);
+      if (!slot) return;
+
       setSlots((prev) =>
         prev.map((slot) => {
           if (slot.id !== slotId) return slot;
@@ -91,8 +112,18 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           };
         })
       );
+
+      // Log the status change
+      logScheduleEvent(
+        'status_changed',
+        slot.date,
+        slot.type,
+        therapistId,
+        { status: slot.assignments.find(a => a.therapistId === therapistId)?.status },
+        { status }
+      );
     },
-    []
+    [slots, logScheduleEvent]
   );
 
   const replaceLead = useCallback(
