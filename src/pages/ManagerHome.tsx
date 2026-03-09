@@ -136,7 +136,7 @@ export default function ManagerHome() {
 
           {/* Pending Approvals */}
           <motion.div
-            custom={5}
+            custom={6}
             variants={fadeUp}
             initial="hidden"
             animate="show"
