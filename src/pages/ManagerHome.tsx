@@ -92,6 +92,7 @@ export default function ManagerHome() {
             variants={fadeUp}
             initial="hidden"
             animate="show"
+            className="col-span-1"
           >
             <ScheduleProgress />
           </motion.div>
@@ -102,7 +103,7 @@ export default function ManagerHome() {
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            className="col-span-2 rounded-lg border bg-card"
+            className="col-span-2 rounded-lg border bg-card flex flex-col"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div className="flex items-center gap-2">
