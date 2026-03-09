@@ -64,15 +64,17 @@ export function useRealtimeSchedule({ onScheduleChange }: UseRealtimeScheduleOpt
     ) => {
       if (!user) return;
 
-      const { error } = await supabase.from("schedule_events").insert({
-        event_type: eventType,
-        shift_date: shiftDate,
-        shift_type: shiftType,
-        therapist_id: therapistId || null,
-        changed_by: user.id,
-        old_value: oldValue || {},
-        new_value: newValue || {},
-      });
+      const { error } = await supabase.from("schedule_events").insert([
+        {
+          event_type: eventType,
+          shift_date: shiftDate,
+          shift_type: shiftType,
+          therapist_id: therapistId || null,
+          changed_by: user.id,
+          old_value: oldValue || {},
+          new_value: newValue || {},
+        },
+      ]);
 
       if (error) {
         console.error("Failed to log schedule event:", error);
