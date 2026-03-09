@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell, Check, CheckCheck, AlertTriangle, Calendar, ArrowLeftRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ export function NotificationBell() {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
     useRealtimeNotifications();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -134,6 +136,19 @@ export function NotificationBell() {
             </div>
           )}
         </ScrollArea>
+        <div className="border-t p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setOpen(false);
+              navigate("/notifications");
+            }}
+          >
+            View all notifications
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
