@@ -158,7 +158,7 @@ export default function ManagerSwapsPage() {
   // Check if user is a manager
   const [isManager, setIsManager] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     const checkRole = async () => {
       if (!user) return;
       
