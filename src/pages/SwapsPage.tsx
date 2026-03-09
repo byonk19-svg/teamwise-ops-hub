@@ -149,8 +149,29 @@ function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
 export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
   const { slots: schedule, applySwap } = useSchedule();
+  const { requests, loading, refetch } = useSwapRequests();
+  const { user } = useAuth();
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
+
+  // Check if user is a manager
+  const [isManager, setIsManager] = useState(false);
+
+  useState(() => {
+    const checkRole = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      setIsManager(data?.role === "manager" || data?.role === "admin");
+    };
+    
+    checkRole();
+  }, [user]);
 
   const pendingApproval = useMemo(
     () => swaps.filter((s) => s.status === "claimed"),
