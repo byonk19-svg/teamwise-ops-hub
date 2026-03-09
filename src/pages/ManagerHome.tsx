@@ -41,6 +41,13 @@ const pendingApprovals = [
 
 export default function ManagerHome() {
   const navigate = useNavigate();
+  
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-6xl">
@@ -54,7 +61,7 @@ export default function ManagerHome() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight">
-                Good morning, Jamie
+                {getGreeting()}, Jamie
               </h1>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span className="text-sm text-muted-foreground">Jan 6–Feb 14 cycle needs attention</span>
