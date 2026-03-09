@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
 } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const managerNav = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
