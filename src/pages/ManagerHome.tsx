@@ -134,7 +134,9 @@ export default function ManagerHome() {
               ))}
             </div>
           </motion.div>
+        </div>
 
+        <div className="grid grid-cols-3 gap-6 mt-6">
           {/* Pending Approvals */}
           <motion.div
             custom={6}
