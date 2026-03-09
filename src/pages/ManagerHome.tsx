@@ -61,7 +61,7 @@ export default function ManagerHome() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-heading text-2xl font-bold text-foreground tracking-tight">
-                Good morning, Jamie
+                {getGreeting()}, Jamie
               </h1>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span className="text-sm text-muted-foreground">Jan 6–Feb 14 cycle needs attention</span>
