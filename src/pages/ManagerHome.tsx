@@ -76,7 +76,7 @@ export default function ManagerHome() {
             { label: "Coverage Issues", value: "3", icon: Shield, variant: "error" as const, sub: "2 critical, 1 warning" },
             { label: "Pending Approvals", value: "5", icon: FileCheck, variant: "warning" as const, sub: "3 availability, 2 swaps" },
             { label: "Availability Received", value: "18/24", icon: Users, variant: "default" as const, sub: "6 therapists pending" },
-            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "Fix coverage to proceed" },
+            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "3 issues to resolve" },
           ].map((stat, i) => (
             <motion.div key={stat.label} custom={i} variants={fadeUp} initial="hidden" animate="show">
               <StatsCard {...stat} sublabel={stat.sub} />
