@@ -143,7 +143,7 @@ export default function ManagerHome() {
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            className="rounded-lg border bg-card"
+            className="col-span-1 rounded-lg border bg-card"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div className="flex items-center gap-2">
