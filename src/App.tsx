@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/therapist/schedule" element={<ProtectedRoute><TherapistSchedulePage /></ProtectedRoute>} />
             <Route path="/therapist/availability" element={<ProtectedRoute><TherapistAvailabilityPage /></ProtectedRoute>} />
             <Route path="/therapist/swaps" element={<ProtectedRoute><TherapistSwapsPage /></ProtectedRoute>} />
+            <Route path="/therapist/settings" element={<ProtectedRoute><TherapistSettingsPage /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
