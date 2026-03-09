@@ -30,6 +30,7 @@ import { SwapRequestForm } from "@/components/swaps/SwapRequestForm";
 import { SwapRequestCard } from "@/components/swaps/SwapRequestCard";
 import { useSwapRequests } from "@/hooks/useSwapRequests";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 
 interface CoverageImpact {
