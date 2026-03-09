@@ -119,6 +119,54 @@ export type Database = {
         }
         Relationships: []
       }
+      swap_requests: {
+        Row: {
+          created_at: string
+          id: string
+          offered_date: string
+          offered_shift_type: string
+          reason: string | null
+          requested_date: string
+          requested_shift_type: string
+          requester_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["swap_request_status"]
+          target_therapist_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          offered_date: string
+          offered_shift_type: string
+          reason?: string | null
+          requested_date: string
+          requested_shift_type: string
+          requester_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["swap_request_status"]
+          target_therapist_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          offered_date?: string
+          offered_shift_type?: string
+          reason?: string | null
+          requested_date?: string
+          requested_shift_type?: string
+          requester_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["swap_request_status"]
+          target_therapist_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -160,6 +208,7 @@ export type Database = {
         | "swap_approved"
         | "swap_denied"
         | "urgent_coverage"
+      swap_request_status: "pending" | "approved" | "denied"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -297,6 +346,7 @@ export const Constants = {
         "swap_denied",
         "urgent_coverage",
       ],
+      swap_request_status: ["pending", "approved", "denied"],
     },
   },
 } as const

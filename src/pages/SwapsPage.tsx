@@ -23,8 +23,15 @@ import {
   Users,
   UserCheck,
   Repeat2,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { SwapRequestForm } from "@/components/swaps/SwapRequestForm";
+import { SwapRequestCard } from "@/components/swaps/SwapRequestCard";
+import { useSwapRequests } from "@/hooks/useSwapRequests";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 
 interface CoverageImpact {
@@ -144,8 +151,29 @@ function getImpactSeverity(impact: CoverageImpact): "ok" | "warning" | "error" {
 export default function ManagerSwapsPage() {
   const [swaps, setSwaps] = useState<ShiftSwap[]>(() => generateSwaps());
   const { slots: schedule, applySwap } = useSchedule();
+  const { requests, loading, refetch } = useSwapRequests();
+  const { user } = useAuth();
 
   const stats = useMemo(() => getSwapStats(swaps), [swaps]);
+
+  // Check if user is a manager
+  const [isManager, setIsManager] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      
+      setIsManager(data?.role === "manager" || data?.role === "admin");
+    };
+    
+    checkRole();
+  }, [user]);
 
   const pendingApproval = useMemo(
     () => swaps.filter((s) => s.status === "claimed"),
@@ -229,6 +257,13 @@ export default function ManagerSwapsPage() {
                 Review and approve swap requests from your team
               </p>
             </div>
+            
+            <SwapRequestForm onSuccess={refetch}>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Request Swap
+              </Button>
+            </SwapRequestForm>
           </div>
 
           <div className="flex items-center gap-3">
@@ -257,6 +292,30 @@ export default function ManagerSwapsPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-5 space-y-6">
+          {/* New Swap Requests Section */}
+          {requests.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <ArrowLeftRight className="h-4 w-4 text-primary" />
+                <h2 className="font-heading text-sm font-semibold text-foreground">
+                  Swap Requests
+                </h2>
+                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  {requests.length}
+                </span>
+              </div>
+              <div className="grid gap-4">
+                {requests.map((request) => (
+                  <SwapRequestCard
+                    key={request.id}
+                    request={request}
+                    isManager={isManager}
+                    onUpdate={refetch}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
           {/* Pending Approval Section */}
           {pendingApproval.length > 0 && (
             <section>
