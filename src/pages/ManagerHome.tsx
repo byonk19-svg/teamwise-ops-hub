@@ -86,6 +86,16 @@ export default function ManagerHome() {
         </div>
 
         <div className="grid grid-cols-3 gap-6">
+          {/* Schedule Progress */}
+          <motion.div
+            custom={4}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+          >
+            <ScheduleProgress />
+          </motion.div>
+
           {/* Coverage Risks */}
           <motion.div
             custom={4}
