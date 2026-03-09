@@ -257,6 +257,13 @@ export default function ManagerSwapsPage() {
                 Review and approve swap requests from your team
               </p>
             </div>
+            
+            <SwapRequestForm onSuccess={refetch}>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Request Swap
+              </Button>
+            </SwapRequestForm>
           </div>
 
           <div className="flex items-center gap-3">
