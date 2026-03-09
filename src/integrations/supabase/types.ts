@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -41,6 +80,42 @@ export type Database = {
           last_name?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      schedule_events: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          event_type: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          shift_date: string
+          shift_type: string
+          therapist_id: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          shift_date: string
+          shift_type: string
+          therapist_id?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          shift_date?: string
+          shift_type?: string
+          therapist_id?: string | null
         }
         Relationships: []
       }
@@ -77,6 +152,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "therapist"
+      notification_priority: "low" | "medium" | "high" | "urgent"
+      notification_type:
+        | "schedule_change"
+        | "coverage_issue"
+        | "swap_request"
+        | "swap_approved"
+        | "swap_denied"
+        | "urgent_coverage"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -205,6 +288,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "therapist"],
+      notification_priority: ["low", "medium", "high", "urgent"],
+      notification_type: [
+        "schedule_change",
+        "coverage_issue",
+        "swap_request",
+        "swap_approved",
+        "swap_denied",
+        "urgent_coverage",
+      ],
     },
   },
 } as const
