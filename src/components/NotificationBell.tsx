@@ -36,6 +36,7 @@ export function NotificationBell() {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
     useRealtimeNotifications();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
