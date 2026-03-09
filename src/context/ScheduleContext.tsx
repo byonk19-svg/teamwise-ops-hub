@@ -37,6 +37,13 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
   const [swappedSlotIds, setSwappedSlotIds] = useState<Set<string>>(new Set());
   const [swapDetails, setSwapDetails] = useState<Map<string, SwapDetail>>(new Map());
 
+  const { logScheduleEvent } = useRealtimeSchedule({
+    onScheduleChange: (event) => {
+      // Refetch slots if needed based on schedule events
+      console.log('Schedule changed:', event);
+    }
+  });
+
   const applySwap = useCallback(
     ({
       shiftDate,
