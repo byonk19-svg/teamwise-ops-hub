@@ -33,11 +33,37 @@ export function useSwapRequests() {
       const { data, error } = await supabase
         .from("swap_requests")
         .select(`
-          *,
-          requester:profiles!swap_requests_requester_id_fkey(first_name, last_name),
-          target_therapist:profiles!swap_requests_target_therapist_id_fkey(first_name, last_name)
+          *
         `)
         .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch profiles separately to avoid foreign key issues
+      const requests = data || [];
+      const userIds = [
+        ...new Set([
+          ...requests.map(r => r.requester_id),
+          ...requests.map(r => r.target_therapist_id).filter(Boolean)
+        ])
+      ];
+
+      const { data: profiles, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name")
+        .in("id", userIds);
+
+      if (profileError) throw profileError;
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const enrichedData = requests.map(request => ({
+        ...request,
+        requester: profileMap.get(request.requester_id),
+        target_therapist: request.target_therapist_id 
+          ? profileMap.get(request.target_therapist_id) 
+          : null
+      }));
 
       if (error) throw error;
 
