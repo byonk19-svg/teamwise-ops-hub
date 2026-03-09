@@ -9,13 +9,19 @@ interface StatsCardProps {
   trend?: "up" | "down" | "flat";
   variant?: "default" | "success" | "warning" | "error";
   className?: string;
+  onClick?: () => void;
+  clickable?: boolean;
 }
 
-export function StatsCard({ label, value, sublabel, icon: Icon, variant = "default", className }: StatsCardProps) {
+export function StatsCard({ label, value, sublabel, icon: Icon, variant = "default", className, onClick, clickable = false }: StatsCardProps) {
+  const Component = clickable ? "button" : "div";
+  
   return (
-    <div
+    <Component
+      onClick={onClick}
       className={cn(
-        "rounded-lg border bg-card px-5 py-4 animate-fade-in",
+        "rounded-lg border bg-card px-5 py-4 animate-fade-in text-left",
+        clickable && "cursor-pointer hover:bg-muted/30 transition-colors duration-200 active:scale-[0.98] transform",
         className
       )}
     >
@@ -54,6 +60,6 @@ export function StatsCard({ label, value, sublabel, icon: Icon, variant = "defau
           </div>
         )}
       </div>
-    </div>
+    </Component>
   );
 }

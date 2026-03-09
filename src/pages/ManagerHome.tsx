@@ -14,6 +14,7 @@ import {
   Send,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { ScheduleProgress } from "@/components/ScheduleProgress";
 
 const fadeUp = {
@@ -39,6 +40,7 @@ const pendingApprovals = [
 ];
 
 export default function ManagerHome() {
+  const navigate = useNavigate();
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-6xl">
@@ -76,13 +78,18 @@ export default function ManagerHome() {
         {/* Stats Row */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Coverage Issues", value: "3", icon: Shield, variant: "error" as const, sub: "2 critical, 1 warning" },
-            { label: "Pending Approvals", value: "5", icon: FileCheck, variant: "warning" as const, sub: "3 availability, 2 swaps" },
-            { label: "Availability Received", value: "18/24", icon: Users, variant: "default" as const, sub: "6 therapists pending" },
-            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "3 issues to resolve" },
+            { label: "Coverage Issues", value: "3", icon: Shield, variant: "error" as const, sub: "2 critical, 1 warning", route: "/schedule" },
+            { label: "Pending Approvals", value: "5", icon: FileCheck, variant: "warning" as const, sub: "3 availability, 2 swaps", route: "/availability" },
+            { label: "Availability Received", value: "18/24", icon: Users, variant: "default" as const, sub: "6 therapists pending", route: "/availability" },
+            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "3 issues to resolve", route: "/schedule" },
           ].map((stat, i) => (
             <motion.div key={stat.label} custom={i} variants={fadeUp} initial="hidden" animate="show">
-              <StatsCard {...stat} sublabel={stat.sub} />
+              <StatsCard 
+                {...stat} 
+                sublabel={stat.sub} 
+                clickable 
+                onClick={() => navigate(stat.route)}
+              />
             </motion.div>
           ))}
         </div>
