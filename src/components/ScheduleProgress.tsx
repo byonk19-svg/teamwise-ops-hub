@@ -43,7 +43,7 @@ export function ScheduleProgress() {
         })}
       </div>
       
-      <div className="mt-5 pt-4 border-t border-border">
+      <div className="mt-auto pt-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-foreground">Overall Progress</p>
