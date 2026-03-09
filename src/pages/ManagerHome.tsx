@@ -40,6 +40,7 @@ const pendingApprovals = [
 ];
 
 export default function ManagerHome() {
+  const navigate = useNavigate();
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-6xl">
