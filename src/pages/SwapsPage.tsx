@@ -23,8 +23,13 @@ import {
   Users,
   UserCheck,
   Repeat2,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { SwapRequestForm } from "@/components/swaps/SwapRequestForm";
+import { SwapRequestCard } from "@/components/swaps/SwapRequestCard";
+import { useSwapRequests } from "@/hooks/useSwapRequests";
+import { useAuth } from "@/hooks/useAuth";
 
 
 interface CoverageImpact {
