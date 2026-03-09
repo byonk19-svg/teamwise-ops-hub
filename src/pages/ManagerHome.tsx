@@ -14,6 +14,7 @@ import {
   Send,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { ScheduleProgress } from "@/components/ScheduleProgress";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 8 },
@@ -54,7 +55,7 @@ export default function ManagerHome() {
                 Good morning, Jamie
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Schedule cycle: Jan 6 – Feb 14 · <span className="font-medium text-accent">Pre-publish</span>
+                Jan 6–Feb 14 cycle needs attention · <span className="font-medium text-destructive">3 coverage gaps</span> · <span className="font-medium text-accent">6 therapists pending availability</span>
               </p>
             </div>
             <div className="flex gap-2">
@@ -76,7 +77,7 @@ export default function ManagerHome() {
             { label: "Coverage Issues", value: "3", icon: Shield, variant: "error" as const, sub: "2 critical, 1 warning" },
             { label: "Pending Approvals", value: "5", icon: FileCheck, variant: "warning" as const, sub: "3 availability, 2 swaps" },
             { label: "Availability Received", value: "18/24", icon: Users, variant: "default" as const, sub: "6 therapists pending" },
-            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "Fix coverage to proceed" },
+            { label: "Publish Readiness", value: "62%", icon: CheckCircle2, variant: "warning" as const, sub: "3 issues to resolve" },
           ].map((stat, i) => (
             <motion.div key={stat.label} custom={i} variants={fadeUp} initial="hidden" animate="show">
               <StatsCard {...stat} sublabel={stat.sub} />
@@ -85,13 +86,24 @@ export default function ManagerHome() {
         </div>
 
         <div className="grid grid-cols-3 gap-6">
-          {/* Coverage Risks */}
+          {/* Schedule Progress */}
           <motion.div
             custom={4}
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            className="col-span-2 rounded-lg border bg-card"
+            className="col-span-1"
+          >
+            <ScheduleProgress />
+          </motion.div>
+
+          {/* Coverage Risks */}
+          <motion.div
+            custom={5}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="col-span-2 rounded-lg border bg-card flex flex-col"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div className="flex items-center gap-2">
@@ -103,16 +115,16 @@ export default function ManagerHome() {
                 Fix Coverage <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
-            <div className="divide-y">
+            <div className="divide-y divide-border/50">
               {coverageIssues.map((issue, i) => (
-                <div key={i} className="flex items-center justify-between px-5 py-3.5">
-                  <div className="flex items-center gap-3">
+                <div key={i} className="flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3.5">
                     {issue.severity === "error" ? (
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                     ) : (
                       <Clock className="h-4 w-4 text-warning" />
                     )}
-                    <div>
+                    <div className="space-y-0.5">
                       <p className="text-sm font-medium text-foreground">{issue.day} · {issue.shift}</p>
                       <p className="text-xs text-muted-foreground">{issue.issue}</p>
                     </div>
@@ -122,14 +134,16 @@ export default function ManagerHome() {
               ))}
             </div>
           </motion.div>
+        </div>
 
+        <div className="grid grid-cols-3 gap-6 mt-6">
           {/* Pending Approvals */}
           <motion.div
-            custom={5}
+            custom={6}
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            className="rounded-lg border bg-card"
+            className="col-span-1 rounded-lg border bg-card"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div className="flex items-center gap-2">
@@ -154,16 +168,15 @@ export default function ManagerHome() {
               ))}
             </div>
           </motion.div>
-        </div>
 
-        {/* Schedule Context / Publish Readiness */}
-        <motion.div
-          custom={6}
-          variants={fadeUp}
-          initial="hidden"
-          animate="show"
-          className="mt-6 rounded-lg border bg-card"
-        >
+          {/* Publish Readiness */}
+          <motion.div
+            custom={7}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="col-span-2 rounded-lg border bg-card"
+          >
           <div className="px-5 py-4 border-b">
             <h2 className="font-heading font-semibold text-sm">Publish Readiness</h2>
           </div>
@@ -194,7 +207,8 @@ export default function ManagerHome() {
               ))}
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </AppLayout>
   );
