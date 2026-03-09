@@ -16,6 +16,8 @@ import TherapistAvailabilityPage from "./pages/TherapistAvailabilityPage";
 import SwapsPage from "./pages/SwapsPage";
 import TherapistSwapsPage from "./pages/TherapistSwapsPage";
 import TeamPage from "./pages/TeamPage";
+import SettingsPage from "./pages/SettingsPage";
+import TherapistSettingsPage from "./pages/TherapistSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
