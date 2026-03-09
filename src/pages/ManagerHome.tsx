@@ -48,6 +48,11 @@ export default function ManagerHome() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
+
+  // For testing - you can uncomment these to test different times
+  // const getGreeting = () => "Good morning"; // Test morning (before 12 PM)
+  // const getGreeting = () => "Good afternoon"; // Test afternoon (12 PM - 6 PM) 
+  // const getGreeting = () => "Good evening"; // Test evening (after 6 PM)
   return (
     <AppLayout>
       <div className="px-8 py-6 max-w-6xl">
