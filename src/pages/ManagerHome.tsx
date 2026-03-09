@@ -168,16 +168,15 @@ export default function ManagerHome() {
               ))}
             </div>
           </motion.div>
-        </div>
 
-        {/* Publish Readiness */}
-        <motion.div
-          custom={7}
-          variants={fadeUp}
-          initial="hidden"
-          animate="show"
-          className="mt-6 rounded-lg border bg-card"
-        >
+          {/* Publish Readiness */}
+          <motion.div
+            custom={7}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="col-span-2 rounded-lg border bg-card"
+          >
           <div className="px-5 py-4 border-b">
             <h2 className="font-heading font-semibold text-sm">Publish Readiness</h2>
           </div>
