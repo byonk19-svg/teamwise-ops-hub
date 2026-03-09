@@ -9,13 +9,13 @@ const progressData = [
 
 export function ScheduleProgress() {
   return (
-    <div className="rounded-lg border bg-card p-5 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg border bg-card h-full flex flex-col">
+      <div className="flex items-center justify-between px-5 py-4 border-b">
         <h3 className="font-heading font-semibold text-sm">Schedule Completion</h3>
-        <div className="text-xs text-muted-foreground">Next 6 weeks</div>
+        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Next 6 weeks</span>
       </div>
       
-      <div className="space-y-4">
+      <div className="px-5 py-4 space-y-5 flex-1">
         {progressData.map((item, i) => {
           const percentage = (item.completed / item.total) * 100;
           return (
@@ -25,33 +25,31 @@ export function ScheduleProgress() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1, duration: 0.3 }}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-baseline justify-between mb-1.5">
                 <span className="text-sm font-medium text-foreground">{item.label}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground tabular-nums">
                   {item.completed}/{item.total}
                 </span>
               </div>
-              <div className="relative">
-                <Progress value={percentage} className="h-2" />
-                <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                  <span>{Math.round(percentage)}% complete</span>
-                  <span>{item.total - item.completed} remaining</span>
-                </div>
+              <Progress value={percentage} className="h-1.5" />
+              <div className="mt-1 flex justify-between">
+                <span className="text-[11px] text-muted-foreground">{Math.round(percentage)}%</span>
+                <span className="text-[11px] text-muted-foreground">{item.total - item.completed} remaining</span>
               </div>
             </motion.div>
           );
         })}
       </div>
       
-      <div className="mt-auto pt-4 border-t border-border">
+      <div className="px-5 py-4 border-t border-border mt-auto">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-foreground">Overall Progress</p>
-            <p className="text-xs text-muted-foreground">Across all shift types</p>
+            <p className="text-sm font-medium text-foreground">Overall</p>
+            <p className="text-[11px] text-muted-foreground">All shift types</p>
           </div>
           <div className="text-right">
-            <p className="text-lg font-heading font-semibold text-foreground">76%</p>
-            <p className="text-xs text-muted-foreground">13 gaps remain</p>
+            <p className="text-xl font-heading font-bold text-foreground tabular-nums">76%</p>
+            <p className="text-[11px] text-muted-foreground">13 gaps</p>
           </div>
         </div>
       </div>
