@@ -14,6 +14,7 @@ import {
   Send,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { ScheduleProgress } from "@/components/ScheduleProgress";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 8 },
