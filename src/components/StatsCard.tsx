@@ -9,6 +9,8 @@ interface StatsCardProps {
   trend?: "up" | "down" | "flat";
   variant?: "default" | "success" | "warning" | "error";
   className?: string;
+  onClick?: () => void;
+  clickable?: boolean;
 }
 
 export function StatsCard({ label, value, sublabel, icon: Icon, variant = "default", className }: StatsCardProps) {
