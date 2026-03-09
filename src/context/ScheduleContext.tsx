@@ -82,12 +82,25 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
         });
         return next;
       });
+
+      // Log the swap event
+      logScheduleEvent(
+        'swap_approved',
+        shiftDate,
+        shiftType,
+        addedId || removedId,
+        { removedId },
+        { addedId }
+      );
     },
-    []
+    [logScheduleEvent]
   );
 
   const setAssignmentStatus = useCallback(
     (slotId: string, therapistId: string, status: AssignmentStatus) => {
+      const slot = slots.find(s => s.id === slotId);
+      if (!slot) return;
+
       setSlots((prev) =>
         prev.map((slot) => {
           if (slot.id !== slotId) return slot;
@@ -99,8 +112,18 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
           };
         })
       );
+
+      // Log the status change
+      logScheduleEvent(
+        'status_changed',
+        slot.date,
+        slot.type,
+        therapistId,
+        { status: slot.assignments.find(a => a.therapistId === therapistId)?.status },
+        { status }
+      );
     },
-    []
+    [slots, logScheduleEvent]
   );
 
   const replaceLead = useCallback(

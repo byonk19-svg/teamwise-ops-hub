@@ -69,14 +69,17 @@ export function AppSidebar() {
   return (
     <aside className="flex h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border">
       {/* Brand */}
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent">
-          <CalendarDays className="h-4 w-4 text-sidebar-accent-foreground" />
+      <div className="flex items-center justify-between px-5 py-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent">
+            <CalendarDays className="h-4 w-4 text-sidebar-accent-foreground" />
+          </div>
+          <div>
+            <span className="font-heading text-sm font-bold text-sidebar-primary">Teamwise</span>
+            <p className="text-[10px] text-sidebar-muted leading-none">Respiratory Therapy</p>
+          </div>
         </div>
-        <div>
-          <span className="font-heading text-sm font-bold text-sidebar-primary">Teamwise</span>
-          <p className="text-[10px] text-sidebar-muted leading-none">Respiratory Therapy</p>
-        </div>
+        <NotificationBell />
       </div>
 
       {/* Main Nav */}

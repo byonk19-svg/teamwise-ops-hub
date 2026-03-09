@@ -71,8 +71,8 @@ export function useRealtimeSchedule({ onScheduleChange }: UseRealtimeScheduleOpt
           shift_type: shiftType,
           therapist_id: therapistId || null,
           changed_by: user.id,
-          old_value: oldValue || {},
-          new_value: newValue || {},
+          old_value: (oldValue || {}) as any,
+          new_value: (newValue || {}) as any,
         },
       ]);
 
